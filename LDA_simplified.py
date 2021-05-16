@@ -54,6 +54,9 @@ class LDA:
         
         self.filtered_topics_df = None
         self.last_selected_cluster = None
+        self.top_topic_for_terms = None
+
+        self.get_top_topic_for_words()
         
         self.word_probs = self.get_word_probabilities()
 
@@ -371,7 +374,8 @@ class LDA:
         
         if manually_changed_probs is False:        
             self.word_probs = self.get_word_probabilities()
-            
+
+        self.get_top_topic_for_words()
         #else: we have to think about that how should we implement the lda update / re-clustering with fixed / given probabilities
 
     #update
@@ -407,8 +411,13 @@ class LDA:
 
     #Build up a new state with the updated weights, then make an inference step (not working currently)
     def term_prob_update_lda(self):
-        state_updated_term_weight = LdaState(self.updated_term_topic_proba, self.updated_term_topic_proba.shape)
-        self.lda_model.do_estep(self.lda_bag_of_words, state=state_updated_term_weight)
+        self.lda_model.init_dir_prior(self.updated_term_topic_proba, 'eta')
+
+        self.lda_model.inference(self.lda_bag_of_words)
+        self.lda_model.update(self.lda_bag_of_words)
+        #state_updated_term_weight = LdaState(self.updated_term_topic_proba, self.updated_term_topic_proba.shape)
+
+        #self.lda_model.do_estep(self.lda_bag_of_words, state=state_updated_term_weight)
         # lda_get_lda_model().update_eta(self.updated_term_topic_proba)
 
     #filter paralell coordinates based on the input value (>value has to be kept)
@@ -461,8 +470,37 @@ class LDA:
     
     def get_last_selected_cluster(self):
         return self.last_selected_cluster
-        
-        
+
+    def get_top_topic_for_words(self):
+        topic = []
+        word = []
+        prob = []
+        for k, v in self.get_word_probabilities().items():
+            for e in v:
+                topic.append(k)
+                word.append(e[0])
+                prob.append(e[1])
+
+        all_word_probs = pd.DataFrame(columns=['Topic', 'Word', 'Probability'])
+        all_word_probs['Topic'] = topic
+        all_word_probs['Word'] = word
+        all_word_probs['Probability'] = prob
+
+        # Sort by probability in descending order
+        all_word_probs.sort_values(by='Probability', ascending=False, inplace=True)
+
+
+
+        # Drop duplicate terms, keep always the first --> Get only the top topics for term
+        all_word_probs_distinct = all_word_probs.drop_duplicates(subset='Word', keep='first')
+        all_word_probs_distinct['Color'] = all_word_probs_distinct.apply(lambda x: self.color_assign_to_topic(x['Topic']),
+                             axis=1)
+
+        all_word_probs_distinct.reset_index(drop=True,inplace=True)
+        self.top_topic_for_terms = all_word_probs_distinct.drop(columns = ['Topic', 'Probability'])
+
+    def get_terms_with_best_topic(self):
+        return self.top_topic_for_terms
     '''
     def get_barchart_word_probs(self,topic_id):
         get_word_probs = self.get_word_probabilities()[topic_id]
