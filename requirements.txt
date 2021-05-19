@@ -7,3 +7,5 @@ beautifulsoup4>=4.9.3
 gensim>=3.8.3
 matplotlib>=3.3.4
 scikit-learn>=0.24.1
+dash-draggable>=0.0.2
+dash-transcrypt>=0.0.6

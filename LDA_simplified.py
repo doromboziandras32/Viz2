@@ -501,6 +501,35 @@ class LDA:
 
     def get_terms_with_best_topic(self):
         return self.top_topic_for_terms
+
+    def build_term_higlights(self, doc_input):
+        #lowercase and lemmatize
+        doc_desc = doc_input['document'].tolist()[0]
+       
+
+        b_tok = wordpunct_tokenize(doc_desc)
+        # lowercase all the words
+        b_low = [b.lower() for b in b_tok]
+
+        lemmatizer = WordNetLemmatizer()
+        # Lemmatize the cleaned words
+        b_lemm = [lemmatizer.lemmatize(b) for b in b_low]
+
+
+        doc_highlighted = b_tok
+
+        top_topic_list = self.top_topic_for_terms['Word'].tolist()
+
+        for i,b in enumerate(b_lemm):
+            if b in top_topic_list:
+                color = self.top_topic_for_terms[self.top_topic_for_terms['Word'] ==b]['Color'].tolist()[0]
+                doc_highlighted[i] = doc_highlighted[i].replace(doc_highlighted[i],f"<span style=\"background-color: {color};\>{doc_highlighted[i]}</span> ")
+        
+        doc_string = ' '.join(doc_highlighted)
+        return doc_string
+
+
+
     '''
     def get_barchart_word_probs(self,topic_id):
         get_word_probs = self.get_word_probabilities()[topic_id]
