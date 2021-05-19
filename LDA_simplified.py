@@ -203,6 +203,13 @@ class LDA:
     def color_assign_to_topic(self, x):
         return self.colors[x]
 
+    #Assign color to topics with opacity
+    def color_assign_to_topic_with_opacity(self, x):
+        color_with_opacity = list(mcolors.to_rgba(self.colors[x]))
+        color_with_opacity[3] = 0.3
+        rgba = f'rgba({color_with_opacity[0] * 255}, {color_with_opacity[1] * 255}, {color_with_opacity[2] * 255}, {color_with_opacity[3]})'
+        return rgba
+
     #build up a pandas dataframe with several useful informations: document - Topic belongings, contribution, assigned color
     #keywords
     def format_topics_sentence(self):
@@ -493,7 +500,7 @@ class LDA:
 
         # Drop duplicate terms, keep always the first --> Get only the top topics for term
         all_word_probs_distinct = all_word_probs.drop_duplicates(subset='Word', keep='first')
-        all_word_probs_distinct['Color'] = all_word_probs_distinct.apply(lambda x: self.color_assign_to_topic(x['Topic']),
+        all_word_probs_distinct['Color'] = all_word_probs_distinct.apply(lambda x: self.color_assign_to_topic_with_opacity(x['Topic']),
                              axis=1)
 
         all_word_probs_distinct.reset_index(drop=True,inplace=True)
