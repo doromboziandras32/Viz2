@@ -1,0 +1,9 @@
+numpy>=1.20.3
+pandas>=1.2.4
+beautifulsoup4>=4.9.3
+nltk>=3.6.2
+gensim>=4.0.1
+matplotlib>=3.4.2
+scikit-learn>=0.24.2
+plotly>=4.14.3
+dash>=1.20.0
