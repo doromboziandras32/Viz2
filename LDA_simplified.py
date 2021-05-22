@@ -571,28 +571,32 @@ class LDA:
 
         #Update the state
         new_state.__dict__['sstats'] = word_probs_stats.astype(np.double)
+        self.num_of_clusters = int(new_state.__dict__['sstats'].shape[0])
 
+        self.lda_model = LdaMulticore(num_topics=self.num_of_clusters, id2word=self.lda_dict)
         self.lda_model.state = new_state
+        #self.lda_model.state = new_state
         #self.lda_model.load(new_state)
-
+        self.lda_model.do_estep(self.lda_bag_of_words)
         print(self.lda_model.state.__dict__['sstats'])
-        self.num_of_clusters = int(self.lda_model.state.__dict__['sstats'].shape[0])
-        orig_expElogbeta = self.lda_get_lda_model().__dict__['expElogbeta']
 
-        new_expelog = np.delete(orig_expElogbeta, cluster_id, 0)
+        #orig_expElogbeta = self.lda_get_lda_model().__dict__['expElogbeta']
 
-        self.lda_get_lda_model().__dict__['expElogbeta'] = new_expelog.astype(np.double)
+        #new_expelog = np.delete(orig_expElogbeta, cluster_id, 0)
+
+        #self.lda_get_lda_model().__dict__['expElogbeta'] = new_expelog.astype(np.double)
         #Modify the number of topics
-        self.lda_get_lda_model().__dict__['num_topics'] = self.num_of_clusters
+        #self.lda_get_lda_model().__dict__['num_topics'] = self.num_of_clusters
 
         #delete alpha
-        alpha = self.lda_get_lda_model().__dict__['num_topics']
-        self.lda_get_lda_model().__dict__['alpha'] = np.full(shape=self.num_of_clusters, fill_value=1/self.num_of_clusters).astype(np.double)
+        #alpha = self.lda_get_lda_model().__dict__['num_topics']
+        #self.lda_get_lda_model().__dict__['alpha'] = np.full(shape=self.num_of_clusters, fill_value=1/self.num_of_clusters).astype(np.double)
         #remove the probabilities for the related cluster
 
         #
         print("Updating LDA...")
-        self.lda_model.inference(self.lda_bag_of_words)
+        #maybe do estep???
+        #self.lda_model.inference(self.lda_bag_of_words)
 
         print(self.lda_model.state.__dict__['sstats'])
 
