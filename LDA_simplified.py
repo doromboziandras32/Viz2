@@ -335,6 +335,8 @@ class LDA:
         #return self.data_filtered
         return pd.DataFrame(list(self.data_filtered.items()), columns=['title', 'document'])
 
+    def get_number_of_clusters(self):
+        return self.num_of_clusters
     #setup the desired number of clusters
     def set_number_of_clusters(self, value):
         self.num_of_clusters = value
@@ -393,6 +395,8 @@ class LDA:
     # TODO: prepare data for term weight view: barchart
     def lda_get_state(self):
         return self.lda_state
+
+
 
     def lda_get_lda_model(self):
         return self.lda_model
@@ -535,7 +539,56 @@ class LDA:
         doc_string = ' '.join(doc_highlighted)
         return doc_string
 
+    def set_last_selected_cluster_from_clust_sum_view(self, cluster_id):
+        self.last_selected_cluster_from_clust_sum_view = cluster_id
 
+    def get_last_selected_cluster_from_clust_sum_view(self):
+        return self.last_selected_cluster_from_clust_sum_view
+
+    def set_clusters_to_merge(self, clusters):
+        self.set_clusters_to_merge = clusters
+
+    def get_clusters_to_merge(self):
+        return self.set_clusters_to_merge
+
+    def delete_cluster(self):
+        #get the cluster id
+        cluster_id = int(self.get_last_selected_cluster_from_clust_sum_view().replace('Cluster ',''))
+
+        new_state = self.lda_get_state()
+
+        #get the current word probabilites to topics
+        word_probs_stats = new_state.__dict__['sstats']
+
+        #remove the cluster
+        word_probs_stats = np.delete(word_probs_stats, cluster_id, 0)
+
+        #Update the state
+        new_state.__dict__['sstats'] = word_probs_stats
+
+        self.lda_model.load(new_state)
+        print(self.lda_model.state.__dict__['sstats'])
+        self.lda_model.update(self.lda_bag_of_words)
+
+        print(self.lda_model.state.__dict__['sstats'])
+
+        self.lda_most_rel_topics = self.get_most_relevant_topics()
+
+        self.topic_df = self.format_topics_sentence()
+
+        # update topic positions function call must be here
+        self.topic_nodes = self.get_topic_nodes()
+
+        self.document_nodes = self.get_document_nodes()
+
+        self.cos_sim = self.calculate_cosine_similarity()
+
+        self.edges = self.get_filtered_edges()
+
+        self.get_top_topic_for_words()
+
+        #reduce the number of clusters
+        #self.num_of_clusters = self.num_of_clusters-1
 
     '''
     def get_barchart_word_probs(self,topic_id):
