@@ -216,10 +216,15 @@ class LDA:
     def format_topics_sentence(self):
         sent_topics_df = pd.DataFrame()
 
+        #print(self.lda_model.per_word_topics)
+        print('lda_bag_of_words')
+        print(self.lda_model[self.lda_bag_of_words])
         # Get main topic in each document
         for i, row_list in enumerate(self.lda_model[self.lda_bag_of_words]):
             row = row_list[0] if self.lda_model.per_word_topics else row_list
             row = sorted(row, key=lambda x: (x[1]), reverse=True)
+            print('row')
+            print(row)
             # Get the Dominant topic, Perc Contribution and Keywords for each document
             for j, (topic_num, prop_topic) in enumerate(row):
                 if j == 0:  # => dominant topic
@@ -565,13 +570,27 @@ class LDA:
         word_probs_stats = np.delete(word_probs_stats, cluster_id, 0)
 
         #Update the state
-        new_state.__dict__['sstats'] = word_probs_stats
+        new_state.__dict__['sstats'] = word_probs_stats.astype(np.double)
 
         self.lda_model.state = new_state
         #self.lda_model.load(new_state)
 
         print(self.lda_model.state.__dict__['sstats'])
-        self.num_of_clusters = self.lda_model.state.__dict__['sstats'].shape[0]
+        self.num_of_clusters = int(self.lda_model.state.__dict__['sstats'].shape[0])
+        orig_expElogbeta = self.lda_get_lda_model().__dict__['expElogbeta']
+
+        new_expelog = np.delete(orig_expElogbeta, cluster_id, 0)
+
+        self.lda_get_lda_model().__dict__['expElogbeta'] = new_expelog.astype(np.double)
+        #Modify the number of topics
+        self.lda_get_lda_model().__dict__['num_topics'] = self.num_of_clusters
+
+        #delete alpha
+        alpha = self.lda_get_lda_model().__dict__['num_topics']
+        self.lda_get_lda_model().__dict__['alpha'] = np.full(shape=self.num_of_clusters, fill_value=1/self.num_of_clusters).astype(np.double)
+        #remove the probabilities for the related cluster
+
+        #
         print("Updating LDA...")
         self.lda_model.inference(self.lda_bag_of_words)
 
