@@ -571,17 +571,19 @@ class LDA:
         #self.lda_model.load(new_state)
 
         print(self.lda_model.state.__dict__['sstats'])
-        self.lda_model.update(self.lda_bag_of_words)
+        self.num_of_clusters = self.lda_model.state.__dict__['sstats'].shape[0]
+        print("Updating LDA...")
+        self.lda_model.inference(self.lda_bag_of_words)
 
         print(self.lda_model.state.__dict__['sstats'])
 
         self.lda_most_rel_topics = self.get_most_relevant_topics()
-
+        print(self.lda_most_rel_topics)
         self.topic_df = self.format_topics_sentence()
 
         # update topic positions function call must be here
         self.topic_nodes = self.get_topic_nodes()
-
+        print(self.topic_nodes)
         self.document_nodes = self.get_document_nodes()
 
         self.cos_sim = self.calculate_cosine_similarity()
