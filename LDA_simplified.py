@@ -12,6 +12,7 @@ from matplotlib import colors as mcolors
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd  # pip install pandas
+from gensim.test.utils import datapath
 
 
 class LDA:
@@ -566,7 +567,9 @@ class LDA:
         #Update the state
         new_state.__dict__['sstats'] = word_probs_stats
 
-        self.lda_model.load(new_state)
+        self.lda_model.state = new_state
+        #self.lda_model.load(new_state)
+
         print(self.lda_model.state.__dict__['sstats'])
         self.lda_model.update(self.lda_bag_of_words)
 
