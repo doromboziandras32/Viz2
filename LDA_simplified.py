@@ -565,35 +565,19 @@ class LDA:
         #remove the cluster
         word_probs_stats = np.delete(word_probs_stats, cluster_id, 0)
 
-        #Update the state
+        #Update the state - with the removal of the cluster
         new_state.__dict__['sstats'] = word_probs_stats.astype(np.double)
+        #set the reduced cluster number
         self.num_of_clusters = int(new_state.__dict__['sstats'].shape[0])
 
+        #init the lda with cluster number and term dict
         self.lda_model = LdaMulticore(num_topics=self.num_of_clusters, id2word=self.lda_dict)
+        #Set the state for the saved one
         self.lda_model.state = new_state
         #self.lda_model.state = new_state
         #self.lda_model.load(new_state)
-        self.lda_model.do_estep(self.lda_bag_of_words)
-
-
-        #orig_expElogbeta = self.lda_get_lda_model().__dict__['expElogbeta']
-
-        #new_expelog = np.delete(orig_expElogbeta, cluster_id, 0)
-
-        #self.lda_get_lda_model().__dict__['expElogbeta'] = new_expelog.astype(np.double)
-        #Modify the number of topics
-        #self.lda_get_lda_model().__dict__['num_topics'] = self.num_of_clusters
-
-        #delete alpha
-        #alpha = self.lda_get_lda_model().__dict__['num_topics']
-        #self.lda_get_lda_model().__dict__['alpha'] = np.full(shape=self.num_of_clusters, fill_value=1/self.num_of_clusters).astype(np.double)
-        #remove the probabilities for the related cluster
-
-        #
-
-        #maybe do estep???
-        #self.lda_model.inference(self.lda_bag_of_words)
-
+        #self.lda_model.do_estep(self.lda_bag_of_words)
+        self.lda_model.inference(self.lda_bag_of_words)
 
 
         self.lda_most_rel_topics = self.get_most_relevant_topics()
