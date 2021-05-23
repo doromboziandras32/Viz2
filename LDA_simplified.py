@@ -12,7 +12,6 @@ from matplotlib import colors as mcolors
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd  # pip install pandas
-from gensim.test.utils import datapath
 
 
 class LDA:
