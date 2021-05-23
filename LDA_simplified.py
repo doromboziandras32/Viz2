@@ -216,15 +216,11 @@ class LDA:
     def format_topics_sentence(self):
         sent_topics_df = pd.DataFrame()
 
-        #print(self.lda_model.per_word_topics)
-        print('lda_bag_of_words')
-        print(self.lda_model[self.lda_bag_of_words])
+
         # Get main topic in each document
         for i, row_list in enumerate(self.lda_model[self.lda_bag_of_words]):
             row = row_list[0] if self.lda_model.per_word_topics else row_list
             row = sorted(row, key=lambda x: (x[1]), reverse=True)
-            print('row')
-            print(row)
             # Get the Dominant topic, Perc Contribution and Keywords for each document
             for j, (topic_num, prop_topic) in enumerate(row):
                 if j == 0:  # => dominant topic
@@ -578,7 +574,7 @@ class LDA:
         #self.lda_model.state = new_state
         #self.lda_model.load(new_state)
         self.lda_model.do_estep(self.lda_bag_of_words)
-        print(self.lda_model.state.__dict__['sstats'])
+
 
         #orig_expElogbeta = self.lda_get_lda_model().__dict__['expElogbeta']
 
