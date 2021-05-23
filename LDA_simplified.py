@@ -597,19 +597,10 @@ class LDA:
         #reduce the number of clusters
         #self.num_of_clusters = self.num_of_clusters-1
 
-    '''
-    def get_barchart_word_probs(self,topic_id):
-        get_word_probs = self.get_word_probabilities()[topic_id]
-        word_probs_barchart = pd.DataFrame()
-        word = []
-        probs = []
-        
-        for g in get_word_probs[:10]:
-            word.append(g[0])
-            probs.append(g[1])
-        
-        word_probs_barchart['
-    '''
+    def merge_cluster(self, cluster_ids: []):
+        self.lda_get_state()
+
+
     # TODO: word prob change might change lda itself?  do_estep, https://radimrehurek.com/gensim/models/ldamodel.html#gensim.models.ldamodel.LdaModel.inference
 
     # Hover cluster node (summary), activate x-ray????
