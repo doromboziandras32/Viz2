@@ -369,6 +369,8 @@ class LDA:
 
         self.lda_model = self.get_lda()
 
+        self.update_lda_related_class_elements()
+        '''
         self.lda_most_rel_topics = self.get_most_relevant_topics()
 
         self.topic_df = self.format_topics_sentence()
@@ -386,6 +388,7 @@ class LDA:
             self.word_probs = self.get_word_probabilities()
 
         self.get_top_topic_for_words()
+        '''
         #else: we have to think about that how should we implement the lda update / re-clustering with fixed / given probabilities
 
     #update
@@ -552,6 +555,22 @@ class LDA:
     def get_clusters_to_merge(self):
         return self.set_clusters_to_merge
 
+    def update_lda_related_class_elements(self):
+        self.lda_most_rel_topics = self.get_most_relevant_topics()
+
+        self.topic_df = self.format_topics_sentence()
+
+        # update topic positions function call must be here
+        self.topic_nodes = self.get_topic_nodes()
+
+        self.document_nodes = self.get_document_nodes()
+
+        self.cos_sim = self.calculate_cosine_similarity()
+
+        self.edges = self.get_filtered_edges()
+
+        self.get_top_topic_for_words()
+
     def delete_cluster(self):
         #get the cluster id
         cluster_id = int(self.get_last_selected_cluster_from_clust_sum_view().replace('Cluster ',''))
@@ -569,36 +588,50 @@ class LDA:
         #set the reduced cluster number
         self.num_of_clusters = int(new_state.__dict__['sstats'].shape[0])
 
-        #init the lda with cluster number and term dict
+        # init the lda with cluster number and term dict
         self.lda_model = LdaMulticore(num_topics=self.num_of_clusters, id2word=self.lda_dict)
-        #Set the state for the saved one
+        # Set the state for the saved one
         self.lda_model.state = new_state
-        #self.lda_model.state = new_state
-        #self.lda_model.load(new_state)
-        #self.lda_model.do_estep(self.lda_bag_of_words)
+
         self.lda_model.inference(self.lda_bag_of_words)
 
-
-        self.lda_most_rel_topics = self.get_most_relevant_topics()
-
-        self.topic_df = self.format_topics_sentence()
-
-        # update topic positions function call must be here
-        self.topic_nodes = self.get_topic_nodes()
-
-        self.document_nodes = self.get_document_nodes()
-
-        self.cos_sim = self.calculate_cosine_similarity()
-
-        self.edges = self.get_filtered_edges()
-
-        self.get_top_topic_for_words()
+        self.update_lda_related_class_elements()
 
         #reduce the number of clusters
         #self.num_of_clusters = self.num_of_clusters-1
 
-    def merge_cluster(self, cluster_ids: []):
-        self.lda_get_state()
+    def merge_cluster(self, cluster_ids):
+        current_state = self.lda_get_state()
+        new_state  = current_state
+        current_lda_stats = current_state.__dict__['sstats']
+
+        merge_clust_array = np.zeros([cluster_ids, len(self.node_dict)])
+
+        print(cluster_ids)
+        for i,c in enumerate(cluster_ids):
+            merge_clust_array[i,:] = current_lda_stats[c,:]
+
+        curr_stats_cleaned = np.delete(current_lda_stats,cluster_ids,0)
+        #sum up the statistics
+        merged_clusters = np.sum(merge_clust_array,axis=0)
+
+        final_cluster_stats = np.concatenate((curr_stats_cleaned, merged_clusters), axis=0)
+
+        new_state.__dict__['sstats'] =  final_cluster_stats
+
+        self.num_of_clusters = int(new_state.__dict__['sstats'].shape[0])
+
+        # init the lda with cluster number and term dict
+        self.lda_model = LdaMulticore(num_topics=self.num_of_clusters, id2word=self.lda_dict)
+        # Set the state for the saved one
+        self.lda_model.state = new_state
+
+        self.lda_model.inference(self.lda_bag_of_words)
+
+        self.update_lda_related_class_elements()
+
+        #self.lda_get_state()
+
 
 
     # TODO: word prob change might change lda itself?  do_estep, https://radimrehurek.com/gensim/models/ldamodel.html#gensim.models.ldamodel.LdaModel.inference
