@@ -17,7 +17,9 @@ import pandas as pd  # pip install pandas
 class LDA:
     #Init of class: load and clean the data, and make the first ldsa clustering with the the given k cluster
     def __init__(self, k, path):
+        self.orig_clust_num = k
         self.num_of_clusters = k
+        self.data_path = path
         # Some default value
         self.cosine_sim_threshold = 0.3
 
@@ -33,7 +35,7 @@ class LDA:
         # self.data_read = self.read_data(path)
         # self.data_filtered = self.filter_data(self.data_read)
         # self.cleaned_data = self.clean_lemmatize_data(self.data_filtered)
-        self.data_read = self.read_data(path)
+        self.data_read = self.read_data()
         self.data_filtered = self.filter_data
         self.cleaned_data, self.node_dict = self.clean_lemmatize_data()
         self.lda_dict, self.lda_bag_of_words = self.build_bag_of_words_model()
@@ -62,8 +64,8 @@ class LDA:
 
     # Read the original dataset with bssoup xml extractor
     @staticmethod
-    def read_data(path):
-        with open(path, encoding="utf8",
+    def read_data(self):
+        with open(self.data_path, encoding="utf8",
                   errors="ignore") as fl:
             fle = fl.read()
             Bs_data = BeautifulSoup(fle, "xml")
@@ -361,7 +363,7 @@ class LDA:
 
     #TODO: extend to reset the settings
     def reset_settings(self):
-        self.__init__()
+        self.__init__(self.orig_clust_num,self.data_path)
 
     # TODO: manually_changed_probs: handle the case where we have predifend word probabilities?
     def update_lda(self, manually_changed_probs = False):
