@@ -193,10 +193,6 @@ class LDA:
         parall_coord_df = parall_coord_df.transpose()
         parall_coord_df = parall_coord_df.reindex(sorted(parall_coord_df.columns), axis=1)
         parall_coord_df['Dominant_Topic'] = parall_coord_df.idxmax(axis="columns")
-        # parall_coord_df['color'] = parall_coord_df.apply(lambda x: self.color_assign_to_topic(x['Dominant_Topic']),
-        #                                                 axis=1)
-        # parall_coord_df.index = parall_coord_df.Dominant_Topic
-        #parall_coord_df = parall_coord_df.drop(columns=['Dominant_Topic'])
 
         return parall_coord_df
 
