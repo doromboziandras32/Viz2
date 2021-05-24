@@ -605,15 +605,17 @@ class LDA:
         new_state  = current_state
         current_lda_stats = current_state.__dict__['sstats']
 
-        merge_clust_array = np.zeros([cluster_ids, len(self.node_dict)])
+        clust_id_int = [int(c) for c in  cluster_ids]
 
-        print(cluster_ids)
-        for i,c in enumerate(cluster_ids):
+        merge_clust_array = np.zeros([len(cluster_ids), len(self.lda_dict.keys())])
+
+        #print(cluster_ids)
+        for i,c in enumerate(clust_id_int):
             merge_clust_array[i,:] = current_lda_stats[c,:]
 
-        curr_stats_cleaned = np.delete(current_lda_stats,cluster_ids,0)
+        curr_stats_cleaned = np.delete(current_lda_stats,clust_id_int,0)
         #sum up the statistics
-        merged_clusters = np.sum(merge_clust_array,axis=0)
+        merged_clusters = np.sum(merge_clust_array,axis=0,keepdims=True)
 
         final_cluster_stats = np.concatenate((curr_stats_cleaned, merged_clusters), axis=0)
 
