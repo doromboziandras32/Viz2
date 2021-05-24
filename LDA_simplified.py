@@ -1,13 +1,11 @@
-# %load LDA_simplified.py
 import numpy as np
 from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize, wordpunct_tokenize
+from nltk.tokenize import wordpunct_tokenize
 from nltk.stem import WordNetLemmatizer
 import string
 from gensim.corpora import Dictionary
 from gensim.models import LdaMulticore
-from gensim.models.ldamodel import LdaState
 from matplotlib import colors as mcolors
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -17,6 +15,7 @@ import pandas as pd  # pip install pandas
 class LDA:
     #Init of class: load and clean the data, and make the first ldsa clustering with the the given k cluster
     def __init__(self, k, path):
+
         self.orig_clust_num = k
         self.num_of_clusters = k
         self.data_path = path
@@ -117,7 +116,7 @@ class LDA:
             #lowercase all the words
             b_tok = [b.lower() for b in res]
 
-            #Remove empty elements, stopwords, punctiations, and digits
+            #Remove empty elements, stopwords, punctuations, and digits
             b_cleaned = [b for b in b_tok if
                          not b in sw and not b in punctuations and not b.isdigit() and b != '' and len(b) > 1]
 
@@ -140,8 +139,7 @@ class LDA:
         lda_bag_of_words = [lda_dictionary.doc2bow(c, allow_update=True) for c in self.cleaned_data.values()]
 
         return lda_dictionary, lda_bag_of_words
-    
-    
+
     # Model LDAs with the given number of clusters
     def get_lda(self):
 
@@ -150,7 +148,6 @@ class LDA:
                                                num_topics=self.num_of_clusters)
 
         #store the state: the state should be saved, since we need it for the inference step later
-        self.lda_state = lda_model.state
 
         return lda_model
 
@@ -160,8 +157,8 @@ class LDA:
         for i in range(self.num_of_clusters):
             topic_id = i
             term_topics[topic_id] = []
-            for l in self.lda_model.get_topic_terms(i, topn=4):
-                term_topics[topic_id].append(self.lda_dict[l[0]])
+            for ld in self.lda_model.get_topic_terms(i, topn=4):
+                term_topics[topic_id].append(self.lda_dict[ld[0]])
 
         return term_topics
 
@@ -212,11 +209,10 @@ class LDA:
         rgba = f'rgba({color_with_opacity[0] * 255}, {color_with_opacity[1] * 255}, {color_with_opacity[2] * 255}, {color_with_opacity[3]})'
         return rgba
 
-    #build up a pandas dataframe with several useful informations: document - Topic belongings, contribution, assigned color
-    #keywords
+    # build up a pandas dataframe with several useful informations: document - Topic belongings, contribution,
+    # assigned color keywords
     def format_topics_sentence(self):
         sent_topics_df = pd.DataFrame()
-
 
         # Get main topic in each document
         for i, row_list in enumerate(self.lda_model[self.lda_bag_of_words]):
@@ -239,8 +235,8 @@ class LDA:
         titles = pd.Series(titles)
         # Add original text to the end of the output
         contents = pd.Series(texts)
-        sent_topics_df = pd.concat([document_nums,sent_topics_df, contents, titles], axis=1)
-        sent_topics_df = sent_topics_df.reset_index(drop= True)
+        sent_topics_df = pd.concat([document_nums, sent_topics_df, contents, titles], axis=1)
+        sent_topics_df = sent_topics_df.reset_index(drop = True)
         sent_topics_df.columns = ['Document_No', 'Dominant_Topic', 'Topic_Perc_Contrib', 'Keywords', 'Text', 'Title']
         # Convert dominaant topic to int
         sent_topics_df['Dominant_Topic'] = sent_topics_df['Dominant_Topic'].astype(int)
@@ -258,7 +254,8 @@ class LDA:
             #random position
             pos = np.random.randint(900, size=2)
             topic_id = f'Cluster {k}'
-            #key: topic id, value: [top terms for the topic with linebreak, color assigned to topic, position of the topic node]
+            # key: topic id, value: [top terms for the topic with linebreak, color assigned to topic, position of the
+            # topic node]
             topic_dict[topic_id] = (' '.join(v).replace(' ', '\n'), self.colors[k], pos)
 
         return topic_dict
@@ -361,51 +358,32 @@ class LDA:
 
         self.update_lda()
 
-    #TODO: extend to reset the settings
+
     def reset_settings(self):
         self.__init__(self.orig_clust_num,self.data_path)
 
-    # TODO: manually_changed_probs: handle the case where we have predifend word probabilities?
+
     def update_lda(self, manually_changed_probs = False):
         self.lda_dict, self.lda_bag_of_words = self.build_bag_of_words_model()
 
         self.lda_model = self.get_lda()
 
         self.update_lda_related_class_elements()
-        '''
-        self.lda_most_rel_topics = self.get_most_relevant_topics()
-
-        self.topic_df = self.format_topics_sentence()
-
-        #update topic positions function call must be here
-        self.topic_nodes = self.get_topic_nodes()
-
-        self.document_nodes = self.get_document_nodes()
-
-        self.cos_sim = self.calculate_cosine_similarity()
-
-        self.edges = self.get_filtered_edges()
-        
-        if manually_changed_probs is False:        
-            self.word_probs = self.get_word_probabilities()
-
-        self.get_top_topic_for_words()
-        '''
-        #else: we have to think about that how should we implement the lda update / re-clustering with fixed / given probabilities
 
     #update
     def update_cosine_sim(self):
         self.cos_sim = self.calculate_cosine_similarity()
         self.edges = self.get_filtered_edges()
 
-    # TODO: prepare data for term weight view: barchart
     def lda_get_state(self):
         return self.lda_state
 
 
-
     def lda_get_lda_model(self):
         return self.lda_model
+
+    def get_lda_model_state(self):
+        return self.lda_model.state
 
     #word to id from the lda id2word, in order to extract the word lambdas by index
     def get_term_invert_dict(self):
@@ -573,6 +551,9 @@ class LDA:
 
         self.get_top_topic_for_words()
 
+        self.set_last_selected_cluster_from_clust_sum_view(None)
+        self.set_last_selected_cluster(None)
+
     def delete_cluster(self):
         #get the cluster id
         cluster_id = int(self.get_last_selected_cluster_from_clust_sum_view().replace('Cluster ',''))
@@ -599,8 +580,6 @@ class LDA:
 
         self.update_lda_related_class_elements()
 
-        #reduce the number of clusters
-        #self.num_of_clusters = self.num_of_clusters-1
 
     def merge_cluster(self, cluster_ids):
         current_state = self.lda_get_state()
@@ -633,9 +612,6 @@ class LDA:
         self.lda_model.inference(self.lda_bag_of_words)
 
         self.update_lda_related_class_elements()
-
-        #self.lda_get_state()
-
 
 
     # TODO: word prob change might change lda itself?  do_estep, https://radimrehurek.com/gensim/models/ldamodel.html#gensim.models.ldamodel.LdaModel.inference
