@@ -12,6 +12,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd  # pip install pandas
 
 
+# noinspection SpellCheckingInspection
 class LDA:
     #Init of class: load and clean the data, and make the first ldsa clustering with the the given k cluster
     def __init__(self, k, path):
@@ -55,21 +56,22 @@ class LDA:
         
         self.filtered_topics_df = None
         self.last_selected_cluster = None
+        self.last_selected_cluster_from_clust_sum_view = None
         self.top_topic_for_terms = None
+        self.clusters_to_merge = None
 
         self.get_top_topic_for_words()
         
         self.word_probs = self.get_word_probabilities()
 
     # Read the original dataset with bssoup xml extractor
-    @staticmethod
     def read_data(self):
         with open(self.data_path, encoding="utf8",
                   errors="ignore") as fl:
             fle = fl.read()
-            Bs_data = BeautifulSoup(fle, "xml")
+            bs_data = BeautifulSoup(fle, "xml")
 
-        return Bs_data
+        return bs_data
 
     # Filter for the paper-defined time interval
     @property
@@ -274,17 +276,17 @@ class LDA:
     #Cosine similarity between the documents
     def calculate_cosine_similarity(self):
         data = []
-        #prepare input for the skelarn cosine similarity function
+        #prepare input for the sklearn cosine similarity function
         for k in sorted(self.node_dict.keys()):
             data.append(" ".join(self.cleaned_data[self.node_dict[k]]))
 
         vec = TfidfVectorizer()
-        X = vec.fit_transform(
+        x = vec.fit_transform(
             data)
 
         # Calculate the pairwise cosine similarities (depending on the amount of data that you are going to have this
         # could take a while)
-        matrix_similarity = cosine_similarity(X)
+        matrix_similarity = cosine_similarity(x)
         # Remove duplicates + diagonal: cosine similarity returns a symmetric matrix, where the diagonal and the
         # lower or upper  triangular is irrelevant
         tril_ind = np.tril_indices(matrix_similarity.shape[0])
@@ -332,11 +334,11 @@ class LDA:
         return self.node_dict[value]
 
     def get_data(self):
-        #return self.data_filtered
         return pd.DataFrame(list(self.data_filtered.items()), columns=['title', 'document'])
 
     def get_number_of_clusters(self):
         return self.num_of_clusters
+
     #setup the desired number of clusters
     def set_number_of_clusters(self, value):
         self.num_of_clusters = value
@@ -358,12 +360,10 @@ class LDA:
 
         self.update_lda()
 
-
     def reset_settings(self):
-        self.__init__(self.orig_clust_num,self.data_path)
+        self.__init__(self.orig_clust_num, self.data_path)
 
-
-    def update_lda(self, manually_changed_probs = False):
+    def update_lda(self):
         self.lda_dict, self.lda_bag_of_words = self.build_bag_of_words_model()
 
         self.lda_model = self.get_lda()
@@ -375,10 +375,6 @@ class LDA:
         self.cos_sim = self.calculate_cosine_similarity()
         self.edges = self.get_filtered_edges()
 
-    def lda_get_state(self):
-        return self.lda_state
-
-
     def lda_get_lda_model(self):
         return self.lda_model
 
@@ -387,15 +383,14 @@ class LDA:
 
     #word to id from the lda id2word, in order to extract the word lambdas by index
     def get_term_invert_dict(self):
-        self.term_invert_dict = {v: k for k, v in self.lda_model.id2word.items()}
+        term_invert_dict = {v: k for k, v in self.lda_model.id2word.items()}
 
-        return self.term_invert_dict
+        return term_invert_dict
 
     def get_topic_term_prob_matrix(self):
-        self.topics_terms_proba_matrix = np.apply_along_axis(lambda x: x / x.sum(), 1,
-                                                             self.lda_get_state().get_lambda())
+        topics_terms_proba_matrix = np.apply_along_axis(lambda x: x / x.sum(), 1, self.get_lda_model_state().get_lambda())
 
-        return self.topics_terms_proba_matrix
+        return topics_terms_proba_matrix
 
     # update the term topic weight
     def update_term_topic_weight(self, topic_idx, term, new_term_weight):
@@ -410,29 +405,20 @@ class LDA:
 
         self.lda_model.inference(self.lda_bag_of_words)
         self.lda_model.update(self.lda_bag_of_words)
-        #state_updated_term_weight = LdaState(self.updated_term_topic_proba, self.updated_term_topic_proba.shape)
-
-        #self.lda_model.do_estep(self.lda_bag_of_words, state=state_updated_term_weight)
-        # lda_get_lda_model().update_eta(self.updated_term_topic_proba)
 
     #filter paralell coordinates based on the input value (>value has to be kept)
-    def filter_parall_coords_topic_contribution(self,value):        
+    def filter_parall_coords_topic_contribution(self, value):
         self.filtered_topics_df = self.get_topics_df().copy()
         self.filtered_topics_df = self.filtered_topics_df[self.filtered_topics_df['Topic_Perc_Contrib'] >= value]
-#        self.filtered_topics_df
-        
 
-        
     def get_filtered_parall_coords_df(self):        
         return self.get_parall_coord_df().loc[self.filtered_topics_df['Title']]
 
-
     #Term weight table input: extract the top n words for the currently selected topic
-    def get_top_n_word_probs_for_topic_i(self,topic_id,n = 10):
+    def get_top_n_word_probs_for_topic_i(self, topic_id, n = 10):
         #todo: change to pandas.fromdict later
         get_word_probs = self.word_probs[topic_id]
 
-        
         word = []
         probs = []
         
@@ -440,15 +426,15 @@ class LDA:
             word.append(g[0])
             probs.append(g[1])
         
-        word_probs_df = pd.DataFrame(data={'Words': word, 'Probabilities':probs})
+        word_probs_df = pd.DataFrame(data={'Words': word, 'Probabilities': probs})
         #get only the top n words
-        word_probs_df = word_probs_df.sort_values(by = 'Probabilities', ascending = False).head(n)
-        word_probs_df.sort_values(by = 'Probabilities', ascending = True, inplace=True)
+        word_probs_df = word_probs_df.sort_values(by='Probabilities', ascending=False).head(n)
+        word_probs_df.sort_values(by='Probabilities', ascending=True, inplace=True)
         
         return word_probs_df
 
-    # Change the word probabilities based on the data table: extract the input dataframe as tuple and replace the already
-    # existing ones with the input
+    # Change the word probabilities based on the data table: extract the input dataframe as tuple and replace the
+    # already existing ones with the input
     def set_word_probabilities(self, input_df):
         words = input_df['Words'].tolist()
 
@@ -456,7 +442,7 @@ class LDA:
         topic_id = self.last_selected_cluster
         for i,t in enumerate(self.word_probs[topic_id]):
             if t[0] in words:
-                self.word_probs[topic_id][i]  = df_tuples[words.index(t[0])]
+                self.word_probs[topic_id][i] = df_tuples[words.index(t[0])]
 
     #store that which cluster selected at latest from the network graph
     #TODO: clean it's state when the lda is updated, else we might have indexing error
@@ -484,15 +470,13 @@ class LDA:
         # Sort by probability in descending order
         all_word_probs.sort_values(by='Probability', ascending=False, inplace=True)
 
-
-
         # Drop duplicate terms, keep always the first --> Get only the top topics for term
         all_word_probs_distinct = all_word_probs.drop_duplicates(subset='Word', keep='first')
-        all_word_probs_distinct['Color'] = all_word_probs_distinct.apply(lambda x: self.color_assign_to_topic_with_opacity(x['Topic']),
-                             axis=1)
+        all_word_probs_distinct['Color'] = all_word_probs_distinct\
+                                            .apply(lambda x: self.color_assign_to_topic_with_opacity(x['Topic']), axis=1)
 
         all_word_probs_distinct.reset_index(drop=True,inplace=True)
-        self.top_topic_for_terms = all_word_probs_distinct.drop(columns = ['Topic', 'Probability'])
+        self.top_topic_for_terms = all_word_probs_distinct.drop(columns=['Topic', 'Probability'])
 
     def get_terms_with_best_topic(self):
         return self.top_topic_for_terms
@@ -500,7 +484,6 @@ class LDA:
     def build_term_higlights(self, doc_input):
         #lowercase and lemmatize
         doc_desc = doc_input['document'].tolist()[0]
-       
 
         b_tok = wordpunct_tokenize(doc_desc)
         # lowercase all the words
@@ -510,15 +493,16 @@ class LDA:
         # Lemmatize the cleaned words
         b_lemm = [lemmatizer.lemmatize(b) for b in b_low]
 
-
         doc_highlighted = b_tok
 
         top_topic_list = self.top_topic_for_terms['Word'].tolist()
 
-        for i,b in enumerate(b_lemm):
+        for i, b in enumerate(b_lemm):
             if b in top_topic_list:
-                color = self.top_topic_for_terms[self.top_topic_for_terms['Word'] ==b]['Color'].tolist()[0]
-                doc_highlighted[i] = doc_highlighted[i].replace(doc_highlighted[i],f"<span style=\"background-color: {color};\>{doc_highlighted[i]}</span> ")
+                color = self.top_topic_for_terms[self.top_topic_for_terms['Word'] == b]['Color'].tolist()[0]
+                doc_highlighted[i] = doc_highlighted[i].replace(doc_highlighted[i],f"<span style=\"background-color:"
+                                                                                   f" {color};\>{doc_highlighted[i]}"
+                                                                                   f"</span> ")
         
         doc_string = ' '.join(doc_highlighted)
         return doc_string
@@ -530,10 +514,10 @@ class LDA:
         return self.last_selected_cluster_from_clust_sum_view
 
     def set_clusters_to_merge(self, clusters):
-        self.set_clusters_to_merge = clusters
+        self.clusters_to_merge = clusters
 
     def get_clusters_to_merge(self):
-        return self.set_clusters_to_merge
+        return self.clusters_to_merge
 
     def update_lda_related_class_elements(self):
         self.lda_most_rel_topics = self.get_most_relevant_topics()
@@ -556,9 +540,9 @@ class LDA:
 
     def delete_cluster(self):
         #get the cluster id
-        cluster_id = int(self.get_last_selected_cluster_from_clust_sum_view().replace('Cluster ',''))
+        cluster_id = int(self.get_last_selected_cluster_from_clust_sum_view().replace('Cluster ', ''))
 
-        new_state = self.lda_get_state()
+        new_state = self.get_lda_model_state()
 
         #get the current word probabilites to topics
         word_probs_stats = new_state.__dict__['sstats']
@@ -580,27 +564,26 @@ class LDA:
 
         self.update_lda_related_class_elements()
 
-
     def merge_cluster(self, cluster_ids):
-        current_state = self.lda_get_state()
+        current_state = self.get_lda_model_state()
         new_state  = current_state
         current_lda_stats = current_state.__dict__['sstats']
 
-        clust_id_int = [int(c) for c in  cluster_ids]
+        clust_id_int = [int(c) for c in cluster_ids]
 
         merge_clust_array = np.zeros([len(cluster_ids), len(self.lda_dict.keys())])
 
-        #print(cluster_ids)
         for i,c in enumerate(clust_id_int):
-            merge_clust_array[i,:] = current_lda_stats[c,:]
+            merge_clust_array[i, :] = current_lda_stats[c, :]
 
         curr_stats_cleaned = np.delete(current_lda_stats,clust_id_int,0)
+
         #sum up the statistics
         merged_clusters = np.sum(merge_clust_array,axis=0,keepdims=True)
 
         final_cluster_stats = np.concatenate((curr_stats_cleaned, merged_clusters), axis=0)
 
-        new_state.__dict__['sstats'] =  final_cluster_stats
+        new_state.__dict__['sstats'] = final_cluster_stats
 
         self.num_of_clusters = int(new_state.__dict__['sstats'].shape[0])
 
