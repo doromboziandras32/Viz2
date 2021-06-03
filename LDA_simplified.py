@@ -13,8 +13,13 @@ import pandas as pd  # pip install pandas
 
 
 # noinspection SpellCheckingInspection
+
 class LDA:
-    #Init of class: load and clean the data, and make the first ldsa clustering with the the given k cluster
+    """
+    Init of class: load and clean the data, and make the first ldsa clustering with the the given k cluster
+    :param: k: desired number of clusters used in LDA , should be at least 2, and 10 at maximum
+    :param: path: Load path of the file
+    """
     def __init__(self, k, path):
 
         self.orig_clust_num = k
@@ -37,10 +42,6 @@ class LDA:
         self.colors = self.cols
         self.col = list(self.cols.values())[:self.num_of_clusters]
 
-        # = np.array([i[key.replace('tab:','')] for i,key in enumerate(mcolors.TABLEAU_COLORS.keys())])
-        # self.data_read = self.read_data(path)
-        # self.data_filtered = self.filter_data(self.data_read)
-        # self.cleaned_data = self.clean_lemmatize_data(self.data_filtered)
         self.data_read = self.read_data()
         self.data_filtered = self.filter_data
         self.cleaned_data, self.node_dict = self.clean_lemmatize_data()
@@ -54,7 +55,7 @@ class LDA:
 
 
 
-        self.topic_nodes = self.get_topic_nodes()
+        self.topic_nodes = self.get_topic_nodes
         self.filtered_topic_df = None
 
         self.document_nodes = self.get_document_nodes()
@@ -76,8 +77,12 @@ class LDA:
 
         self.indexed_topic_node_df = self.set_indexed_topic_node_df()
 
-    # Read the original dataset with bssoup xml extractor
     def read_data(self):
+        """
+        Read the original dataset with bssoup xml extractor
+        :return: data stored in BeautiflSoup instance
+        """
+
         with open(self.data_path, encoding="utf8",
                   errors="ignore") as fl:
             fle = fl.read()
@@ -85,9 +90,17 @@ class LDA:
 
         return bs_data
 
-    # Filter for the paper-defined time interval
     @property
     def filter_data(self):
+        """
+         Filter for the paper-defined time interval(1994-2010)
+         Separate the title and the document description
+
+         Store in dictionary format:
+         k: Title , v: document text
+
+        :return: Filtered data stored in dictionary<title, document text>
+        """
         dataset = self.data_read.find_all(True)
             
         filtered_docs = {}
@@ -109,12 +122,24 @@ class LDA:
 
         return filtered_docs
 
-    #get the number of clusters
     def get_k(self):
+        """
+        :return: number of clusters specified
+        """
         return self.num_of_clusters
 
-    #Cleaning of data based on the paper description and with further useful approaches
     def clean_lemmatize_data(self):
+        """
+        Cleaning of data based on the paper description and with further useful approaches:
+            - tokenize
+            - removal of numeric characters
+            - removal of punctuations
+            - removal of stopwords
+            - lemmatize the 'cleaned data'
+
+        :return: dict<document_number, title> , dict<title, cleaned_text>
+        """
+
         sw = stopwords.words('english')
         lemmatizer = WordNetLemmatizer()
         punctuations = set(string.punctuation)
@@ -146,27 +171,38 @@ class LDA:
 
         return cleaned_texts, node_dict
 
-    # bag of words model: input of lda
-    # lda_dictionary: set of unique words
     def build_bag_of_words_model(self):
+        """
+        Build the bag of words model from the cleaned data
+        And the dictionary of the unique words
+
+        :return: dictonary of all words, bag of words model of the documents
+        """
+
         lda_dictionary = Dictionary(self.cleaned_data.values())
         lda_bag_of_words = [lda_dictionary.doc2bow(c, allow_update=True) for c in self.cleaned_data.values()]
 
         return lda_dictionary, lda_bag_of_words
 
-    # Model LDAs with the given number of clusters
     def get_lda(self):
+        """
+        Model LDA with the given cluster number and the built up bag of words model
+
+        :return: lda model
+        """
 
         lda_model: LdaMulticore = LdaMulticore(corpus=self.lda_bag_of_words,
                                                id2word=self.lda_dict,
                                                num_topics=self.num_of_clusters)
 
-        #store the state: the state should be saved, since we need it for the inference step later
-
         return lda_model
 
-    #extract the most relevant top 4 terms for the topics
     def get_most_relevant_topics(self):
+        """
+        extract the most relevant top 4 terms for the topics (relevant for topic node representation)
+
+        :return:dict<cluster_id, [top_4_terms_for_cluster]>
+        """
         term_topics = {}
         for i in range(self.num_of_clusters):
             topic_id = i
@@ -177,30 +213,38 @@ class LDA:
         return term_topics
 
     def get_col(self):
+        """
+        :return: cluster colors (extracted from matplotlib colors)
+        """
         return self.col
 
-    #extract all the word probabilities from the lda model for each cluster
     def get_word_probabilities(self):
+        """
+        extract all the word probabilities from the lda model for each cluster
+
+        :return: dict<topic_id, [word_probabilitities]>
+        """
+
         word_probs = {}
         for i in range(self.num_of_clusters):
-            # topic_id = f'Cluster {str(i)}'
-
             topic_id = i
-
             word_probs[topic_id] = []
             for l in self.lda_model.get_topic_terms(i, topn=len(self.lda_dict)):
                 word_probs[topic_id].append((self.lda_dict[l[0]], l[1]))
 
         return word_probs
 
-    # Build pandas dataframe to make it feedable by the paralell coordinates
     def get_parall_coord_df(self):
+        """
+        Build pandas dataframe for the paralell coordinates view
+
+        :return: pandas dataframe for documents with their dominant topic
+        """
         parall_coords = {}
         for i, b in zip(self.cleaned_data.keys(), self.lda_bag_of_words):
             parall_coords[i] = self.lda_model[b]
 
         parall_coord_df = pd.DataFrame.from_dict({k: dict(v) for k, v in parall_coords.items()})
-        # parall_coord_df.sort_index()
         parall_coord_df = parall_coord_df.replace(np.nan, 0)
         parall_coord_df = parall_coord_df.transpose()
         parall_coord_df = parall_coord_df.reindex(sorted(parall_coord_df.columns), axis=1)
@@ -208,20 +252,33 @@ class LDA:
 
         return parall_coord_df
 
-    # Assign color to the topics
     def color_assign_to_topic(self, x):
+        """
+        :param x: topic id
+        :return: color assigned to topic x (dict)
+        """
         return self.colors[x]
 
-    #Assign color to topics with opacity
+
     def color_assign_to_topic_with_opacity(self, x):
+        """
+        Assign color to topics with opacity
+
+        :param x: topic id
+        :return: opaque color for term highlighting
+        """
         color_with_opacity = list(mcolors.to_rgba(self.colors[x]))
         color_with_opacity[3] = 0.3
         rgba = f'rgba({color_with_opacity[0] * 255}, {color_with_opacity[1] * 255}, {color_with_opacity[2] * 255}, {color_with_opacity[3]})'
         return rgba
 
-    # build up a pandas dataframe with several useful informations: document - Topic belongings, contribution,
-    # assigned color keywords
     def format_topics_sentence(self):
+        """
+        build up a pandas dataframe with several useful informations: document - Topic belongings, contribution,
+        assigned color keywords
+
+        :return: pd.DataFrame('Document_No', 'Dominant_Topic', 'Topic_Perc_Contrib', 'Keywords', 'Text', 'Title','color')
+        """
         sent_topics_df = pd.DataFrame()
 
         # Get main topic in each document
@@ -254,11 +311,14 @@ class LDA:
                                                        axis=1)
 
         return sent_topics_df
-    
-    #TODO: outource position assignment to a function to avoid re positioning during cosine similarity filter
-    #e.g. update_topic_position
-    # build dictionary for the topics which will be input for the cytoscape node
+
+    @property
     def get_topic_nodes(self):
+        """
+        build dictionary for the topics which will be input for the cytoscape node, generate a random position as well
+
+        :return: <topic_id, (color, position)>
+        """
         topic_dict = {}
         for k, v in self.lda_most_rel_topics.items():
             #random position
@@ -271,6 +331,11 @@ class LDA:
         return topic_dict
 
     def set_indexed_topic_node_df(self):
+        """
+        topic dataframe in indexed format: for faster searching
+
+        :return: indexed df
+        """
         df = self.topic_df.copy()
         df.set_index('Document_No', inplace= True)
 
@@ -280,21 +345,32 @@ class LDA:
         return self.indexed_topic_node_df
 
     def get_color_with_opacity(self, id, is_node_id):
+        """
+        :param id: id of the node /cluster
+        :param is_node_id: bool, whether the selected cyoscape element is document node or cluster node
+        :return: opaque color for the background
+        """
         if is_node_id:
             color = self.color_assign_to_topic_with_opacity(self.get_indexed_topic_node_df().loc[int(id)]['Dominant_Topic'])
-
         else:
             color = self.color_assign_to_topic_with_opacity(int(str(id).replace('Cluster ','')))
 
         return color
 
     def get_colormap_for_cluster(self):
+        """
+        Build colormap for wordcloud
+
+        :return: colormap related to current cluster (assigned by the already related cluster color)
+        """
         return self.colormaps[self.col[int(self.get_last_selected_cluster())]]
 
-    # build dictionary for document nodes to the cytoscape network visualization
     def get_document_nodes(self):
-        # key: document_id, vallue:[document_title, document_color: color of the cluster,
-        # cluster_id: we need for make the invisible edges and define the belonging]
+        """
+        build dictionary for document nodes to the cytoscape network visualization
+
+        :return: dict<document_id,(document_title, document_color: color of the cluster,cluster)>
+        """
         doc_nodes = {}
         if self.filtered_topic_df is None:
             iterable_df = self.topic_df.copy()
@@ -307,8 +383,16 @@ class LDA:
 
         return doc_nodes
 
-    #Cosine similarity between the documents
+    #
     def calculate_cosine_similarity(self):
+        """
+        Calculate Cosine similarity between the documents with sklearn implementation
+        Also removing the duplicities (taking only the upper trinagle elements from the result)
+        In order to avoid duplicate edges on the graph
+
+        :return: cosine_sim_matrix = np.array([number_of_documents,number_of_documents])
+        """
+
         data = []
         #prepare input for the sklearn cosine similarity function
         for k in sorted(self.node_dict.keys()):
@@ -329,8 +413,12 @@ class LDA:
 
         return mat_sim_upper
 
-    # Get the visible edges (edges between document nodes over the cosine sim threshold
     def get_filtered_edges(self):
+        """
+        Get the visible edges (edges between document nodes over the cosine sim threshold
+
+        :return: [(node_0, node_1, cosine_similarity value),...]
+        """
         #filter edges based on the given threshold
         filtered_edges = np.argwhere(self.cos_sim >= self.cosine_sim_threshold)
 
@@ -357,7 +445,7 @@ class LDA:
         return self.get_document_nodes()
 
     def get_topic_nodes_(self):
-        return self.get_topic_nodes()
+        return self.get_topic_nodes
 
     def get_edges_(self):
         return self.get_filtered_edges()
@@ -394,6 +482,12 @@ class LDA:
 
     # To remove documents:
     def remove_document(self, value):
+        """
+        Remove documents by clicking on the delete document button
+
+        :param value: id of the document node
+        :return: updated dictionary of nodes, by removing the marked document
+        """
         # Update the document list: LDA has to be recalculated
 
         del self.cleaned_data[self.node_dict[value]]
@@ -402,17 +496,25 @@ class LDA:
         self.update_lda()
 
     def reset_settings(self):
+        """
+        Reset the the view and the lda class itself with the original cluster number
+        """
         self.__init__(self.orig_clust_num, self.data_path)
 
     def update_lda(self):
+        """
+        Re-cluster with the new cluster number (reaction of "update" button on the app)
+        """
         self.lda_dict, self.lda_bag_of_words = self.build_bag_of_words_model()
 
         self.lda_model = self.get_lda()
 
         self.update_lda_related_class_elements()
 
-    #update
     def update_cosine_sim(self):
+        """
+        Update cosine similarites
+        """
         self.cos_sim = self.calculate_cosine_similarity()
         self.edges = self.get_filtered_edges()
 
@@ -433,13 +535,14 @@ class LDA:
 
         return topics_terms_proba_matrix
 
-    # update the term topic weight
+    #not used in the final version
     def update_term_topic_weight(self, topic_idx, term, new_term_weight):
         term_idx = self.get_term_invert_dict()[term]
         self.updated_term_topic_proba = self.get_topic_term_prob_matrix().copy()
         self.updated_term_topic_proba[topic_idx, term_idx] = new_term_weight
         return self.updated_term_topic_proba
 
+    # not used in the final version
     #Build up a new state with the updated weights, then make an inference step (not working currently)
     def term_prob_update_lda(self):
         self.lda_model.init_dir_prior(self.updated_term_topic_proba, 'eta')
@@ -447,9 +550,16 @@ class LDA:
         self.lda_model.inference(self.lda_bag_of_words)
         self.lda_model.update(self.lda_bag_of_words)
 
-    #filter paralell coordinates based on the input value (>value has to be kept)
-    #Also filter the document topic dataframe for node build
+    #
+    #
     def filter_parall_coords_topic_contribution(self, value):
+        """
+        filter paralell coordinates based on the input value (>value has to be kept)
+        filtering also the document-topic df to filter in cytoscape
+
+        :param value: paralell coordinate filter threshold
+        :return:filtered paralell coordinates and topic dataframe
+        """
         self.filtered_paarcord_topics_df = self.get_topics_df().copy()
 
         #get_indexed_topic_node_df
@@ -457,13 +567,17 @@ class LDA:
         remained_docs = self.filtered_paarcord_topics_df['Document_No'].tolist()
         self.filtered_topic_df = self.topic_df[self.topic_df['Document_No'].isin(remained_docs)]
 
-
     def get_filtered_parall_coords_df(self):        
         return self.get_parall_coord_df().loc[self.filtered_paarcord_topics_df['Title']]
 
-    #Term weight table input: extract the top n words for the currently selected topic
     def get_top_n_word_probs_for_topic_i(self, topic_id, n = 10):
-        #todo: change to pandas.fromdict later
+        """
+        Term weight table input: extract the top n words for the currently selected topic
+
+        :param topic_id: id of the cluster
+        :param n: number of words to be extracted
+        :return: dataframe with the words and the related probabilities
+        """
         get_word_probs = self.word_probs[topic_id]
 
         word = []
@@ -480,9 +594,6 @@ class LDA:
         
         return word_probs_df
 
-
-    #store that which cluster selected at latest from the network graph
-    #TODO: clean it's state when the lda is updated, else we might have indexing error
     def set_last_selected_cluster(self, value):
         self.last_selected_cluster = value
     
@@ -490,6 +601,11 @@ class LDA:
         return self.last_selected_cluster
 
     def get_top_topic_for_words(self):
+        """
+        build Topic - word - probability df with the related opaque color for term highlight in document view
+
+        :return: pandas.DataFrame('Word', 'Color')
+        """
         topic = []
         word = []
         prob = []
@@ -519,6 +635,13 @@ class LDA:
         return self.top_topic_for_terms
 
     def build_term_higlights(self, doc_input):
+        """
+        Setup the document view by highlighting the most relevant terms with their topic correspondence
+
+        :param doc_input: Id of the document
+        :return: str(): document as string, with the proper html tags assigned for specific terms (will
+        be used in the visualization by dash.DangerouslySetInnerHTML())
+        """
         #lowercase and lemmatize
         doc_desc = doc_input['document'].tolist()[0]
 
@@ -534,6 +657,7 @@ class LDA:
 
         top_topic_list = self.top_topic_for_terms['Word'].tolist()
 
+        # Assign the the highlighting to the raw text (unlemmatized etc.)
         for i, b in enumerate(b_lemm):
             if b in top_topic_list:
                 color = self.top_topic_for_terms[self.top_topic_for_terms['Word'] == b]['Color'].tolist()[0]
@@ -557,12 +681,15 @@ class LDA:
         return self.clusters_to_merge
 
     def update_lda_related_class_elements(self):
+        """
+        update the relevant class components after cluster merge / delete , re-clustering steps
+        """
         self.lda_most_rel_topics = self.get_most_relevant_topics()
 
         self.topic_df = self.format_topics_sentence()
 
         # update topic positions function call must be here
-        self.topic_nodes = self.get_topic_nodes()
+        self.topic_nodes = self.get_topic_nodes
 
         self.document_nodes = self.get_document_nodes()
 
@@ -583,9 +710,13 @@ class LDA:
 
         self.filtered_topic_df = None
 
-
     def delete_cluster(self):
-        #get the cluster id
+        """
+        Remove cluster from lda: modifying the state of the model
+
+        :return: lda with the removed cluster
+        """
+
         cluster_id = int(self.get_last_selected_cluster_from_clust_sum_view().replace('Cluster ', ''))
 
         new_state = self.get_lda_model_state()
@@ -611,6 +742,12 @@ class LDA:
         self.update_lda_related_class_elements()
 
     def merge_cluster(self, cluster_ids):
+        """
+        Merge clusters selected from the checklist: sum up the probs at row wise
+
+        :param cluster_ids: cluster ids selected in checklist
+        :return: model with merged clusters
+        """
         current_state = self.get_lda_model_state()
         new_state  = current_state
         current_lda_stats = current_state.__dict__['sstats']
@@ -641,16 +778,3 @@ class LDA:
         self.lda_model.inference(self.lda_bag_of_words)
 
         self.update_lda_related_class_elements()
-
-
-    # TODO: word prob change might change lda itself?  do_estep, https://radimrehurek.com/gensim/models/ldamodel.html#gensim.models.ldamodel.LdaModel.inference
-
-    # Hover cluster node (summary), activate x-ray????
-
-    # Remove Cluster summary node - remove topic
-
-    # Cluster Summary view: represent cluster summaries
-
-    # Cluster tree view
-
-    # Drag and drop in dash

@@ -13,7 +13,6 @@ Welcome to Viz2 2021 Lee et Al LDA's documentation!
 Model File
 =================
 .. automodule:: LDA_simplified
-.. automodule:: LDA_simplified-CLEANED
    :members:
 
 Indices and tables
