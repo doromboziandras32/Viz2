@@ -26,16 +26,16 @@ class LDA:
         self.word_prob_range = 0
 
         #Build up colors dictionary
-        cols = {}
-        cmaps = ['Blues', 'Oranges', 'Greens', 'Reds', 'Purples', 'copper', 'RdPu', 'Greys', 'YIGn', 'BuGn']
+        self.cols = {}
+        cmaps = ['Blues', 'Oranges', 'Greens', 'Reds', 'Purples', 'copper', 'RdPu', 'Greys', 'YlGn', 'BuGn']
         self.colormaps = {}
         for i, key in enumerate(mcolors.TABLEAU_COLORS.keys()):
             cl = key.replace('tab:', '')
-            cols[i] = cl
+            self.cols[i] = cl
             self.colormaps[cl] = cmaps[i]
 
-        self.colors = cols
-        self.col = list(cols.values())[:self.num_of_clusters]
+        self.colors = self.cols
+        self.col = list(self.cols.values())[:self.num_of_clusters]
 
         # = np.array([i[key.replace('tab:','')] for i,key in enumerate(mcolors.TABLEAU_COLORS.keys())])
         # self.data_read = self.read_data(path)
@@ -458,16 +458,6 @@ class LDA:
         
         return word_probs_df
 
-    # Change the word probabilities based on the data table: extract the input dataframe as tuple and replace the
-    # already existing ones with the input
-    def set_word_probabilities(self, input_df):
-        words = input_df['Words'].tolist()
-
-        df_tuples = input_df.to_records(index=False)
-        topic_id = self.last_selected_cluster
-        for i,t in enumerate(self.word_probs[topic_id]):
-            if t[0] in words:
-                self.word_probs[topic_id][i] = df_tuples[words.index(t[0])]
 
     #store that which cluster selected at latest from the network graph
     #TODO: clean it's state when the lda is updated, else we might have indexing error
@@ -562,8 +552,12 @@ class LDA:
 
         self.indexed_topic_node_df = self.set_indexed_topic_node_df()
 
+        self.word_probs = self.get_word_probabilities()
+
         self.set_last_selected_cluster_from_clust_sum_view(None)
         self.set_last_selected_cluster(None)
+
+        self.col = list(self.cols.values())[:self.num_of_clusters]
 
 
     def delete_cluster(self):
