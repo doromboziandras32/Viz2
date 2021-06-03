@@ -27,10 +27,16 @@ class LDA:
 
         #Build up colors dictionary
         cols = {}
+        cmaps = ['Blues', 'Oranges', 'Greens', 'Reds', 'Purples', 'copper', 'RdPu', 'Greys', 'YIGn', 'BuGn']
+        self.colormaps = {}
         for i, key in enumerate(mcolors.TABLEAU_COLORS.keys()):
-            cols[i] = key.replace('tab:', '')
+            cl = key.replace('tab:', '')
+            cols[i] = cl
+            self.colormaps[cl] = cmaps[i]
+
         self.colors = cols
         self.col = list(cols.values())[:self.num_of_clusters]
+
         # = np.array([i[key.replace('tab:','')] for i,key in enumerate(mcolors.TABLEAU_COLORS.keys())])
         # self.data_read = self.read_data(path)
         # self.data_filtered = self.filter_data(self.data_read)
@@ -277,6 +283,9 @@ class LDA:
             color = self.color_assign_to_topic_with_opacity(int(str(id).replace('Cluster ','')))
 
         return color
+
+    def get_colormap_for_cluster(self):
+        return self.colormaps[self.col[int(self.get_last_selected_cluster())]]
 
     # build dictionary for document nodes to the cytoscape network visualization
     def get_document_nodes(self):
