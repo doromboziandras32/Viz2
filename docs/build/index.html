@@ -1,0 +1,479 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Welcome to Viz2 2021 Lee et Al LDA’s documentation! &#8212; Viz2 2021 Lee et Al LDA 2021 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="welcome-to-viz2-2021-lee-et-al-lda-s-documentation">
+<h1>Welcome to Viz2 2021 Lee et Al LDA’s documentation!<a class="headerlink" href="#welcome-to-viz2-2021-lee-et-al-lda-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+<section id="module-LDA_simplified">
+<span id="model-file"></span><h1>Model File<a class="headerlink" href="#module-LDA_simplified" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="LDA_simplified.LDA">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">LDA_simplified.</span></span><span class="sig-name descname"><span class="pre">LDA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Init of class: load and clean the data, and make the first ldsa clustering with the the given k cluster
+:param: k: desired number of clusters used in LDA , should be at least 2, and 10 at maximum
+:param: path: Load path of the file</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.build_bag_of_words_model">
+<span class="sig-name descname"><span class="pre">build_bag_of_words_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.build_bag_of_words_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the bag of words model from the cleaned data
+And the dictionary of the unique words</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dictonary of all words, bag of words model of the documents</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.build_term_higlights">
+<span class="sig-name descname"><span class="pre">build_term_higlights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc_input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.build_term_higlights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup the document view by highlighting the most relevant terms with their topic correspondence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>doc_input</strong> – Id of the document</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>str(): document as string, with the proper html tags assigned for specific terms (will</p>
+</dd>
+</dl>
+<p>be used in the visualization by dash.DangerouslySetInnerHTML())</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.calculate_cosine_similarity">
+<span class="sig-name descname"><span class="pre">calculate_cosine_similarity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.calculate_cosine_similarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate Cosine similarity between the documents with sklearn implementation
+Also removing the duplicities (taking only the upper trinagle elements from the result)
+In order to avoid duplicate edges on the graph</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>cosine_sim_matrix = np.array([number_of_documents,number_of_documents])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.clean_lemmatize_data">
+<span class="sig-name descname"><span class="pre">clean_lemmatize_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.clean_lemmatize_data" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Cleaning of data based on the paper description and with further useful approaches:</dt><dd><ul class="simple">
+<li><p>tokenize</p></li>
+<li><p>removal of numeric characters</p></li>
+<li><p>removal of punctuations</p></li>
+<li><p>removal of stopwords</p></li>
+<li><p>lemmatize the ‘cleaned data’</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict&lt;document_number, title&gt; , dict&lt;title, cleaned_text&gt;</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.color_assign_to_topic">
+<span class="sig-name descname"><span class="pre">color_assign_to_topic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.color_assign_to_topic" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> – topic id</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>color assigned to topic x (dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.color_assign_to_topic_with_opacity">
+<span class="sig-name descname"><span class="pre">color_assign_to_topic_with_opacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.color_assign_to_topic_with_opacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign color to topics with opacity</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> – topic id</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>opaque color for term highlighting</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.delete_cluster">
+<span class="sig-name descname"><span class="pre">delete_cluster</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.delete_cluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove cluster from lda: modifying the state of the model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>lda with the removed cluster</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.filter_data">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">filter_data</span></span><a class="headerlink" href="#LDA_simplified.LDA.filter_data" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Filter for the paper-defined time interval(1994-2010)
+Separate the title and the document description</p>
+<p>Store in dictionary format:
+k: Title , v: document text</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Filtered data stored in dictionary&lt;title, document text&gt;</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.filter_parall_coords_topic_contribution">
+<span class="sig-name descname"><span class="pre">filter_parall_coords_topic_contribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.filter_parall_coords_topic_contribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>filter paralell coordinates based on the input value (&gt;value has to be kept)
+filtering also the document-topic df to filter in cytoscape</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – paralell coordinate filter threshold</p>
+</dd>
+</dl>
+<p>:return:filtered paralell coordinates and topic dataframe</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.format_topics_sentence">
+<span class="sig-name descname"><span class="pre">format_topics_sentence</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.format_topics_sentence" title="Permalink to this definition">¶</a></dt>
+<dd><p>build up a pandas dataframe with several useful informations: document - Topic belongings, contribution,
+assigned color keywords</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>pd.DataFrame(‘Document_No’, ‘Dominant_Topic’, ‘Topic_Perc_Contrib’, ‘Keywords’, ‘Text’, ‘Title’,’color’)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.get_col">
+<span class="sig-name descname"><span class="pre">get_col</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.get_col" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>cluster colors (extracted from matplotlib colors)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.get_color_with_opacity">
+<span class="sig-name descname"><span class="pre">get_color_with_opacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_node_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.get_color_with_opacity" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> – id of the node /cluster</p></li>
+<li><p><strong>is_node_id</strong> – bool, whether the selected cyoscape element is document node or cluster node</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>opaque color for the background</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.get_colormap_for_cluster">
+<span class="sig-name descname"><span class="pre">get_colormap_for_cluster</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.get_colormap_for_cluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build colormap for wordcloud</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>colormap related to current cluster (assigned by the already related cluster color)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.get_document_nodes">
+<span class="sig-name descname"><span class="pre">get_document_nodes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.get_document_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>build dictionary for document nodes to the cytoscape network visualization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict&lt;document_id,(document_title, document_color: color of the cluster,cluster)&gt;</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.get_filtered_edges">
+<span class="sig-name descname"><span class="pre">get_filtered_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.get_filtered_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the visible edges (edges between document nodes over the cosine sim threshold</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>[(node_0, node_1, cosine_similarity value),…]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.get_k">
+<span class="sig-name descname"><span class="pre">get_k</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.get_k" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>number of clusters specified</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.get_lda">
+<span class="sig-name descname"><span class="pre">get_lda</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.get_lda" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model LDA with the given cluster number and the built up bag of words model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>lda model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.get_most_relevant_topics">
+<span class="sig-name descname"><span class="pre">get_most_relevant_topics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.get_most_relevant_topics" title="Permalink to this definition">¶</a></dt>
+<dd><p>extract the most relevant top 4 terms for the topics (relevant for topic node representation)</p>
+<p>:return:dict&lt;cluster_id, [top_4_terms_for_cluster]&gt;</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.get_parall_coord_df">
+<span class="sig-name descname"><span class="pre">get_parall_coord_df</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.get_parall_coord_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build pandas dataframe for the paralell coordinates view</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>pandas dataframe for documents with their dominant topic</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.get_top_n_word_probs_for_topic_i">
+<span class="sig-name descname"><span class="pre">get_top_n_word_probs_for_topic_i</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topic_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.get_top_n_word_probs_for_topic_i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Term weight table input: extract the top n words for the currently selected topic</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>topic_id</strong> – id of the cluster</p></li>
+<li><p><strong>n</strong> – number of words to be extracted</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dataframe with the words and the related probabilities</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.get_top_topic_for_words">
+<span class="sig-name descname"><span class="pre">get_top_topic_for_words</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.get_top_topic_for_words" title="Permalink to this definition">¶</a></dt>
+<dd><p>build Topic - word - probability df with the related opaque color for term highlight in document view</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>pandas.DataFrame(‘Word’, ‘Color’)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.get_topic_nodes">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">get_topic_nodes</span></span><a class="headerlink" href="#LDA_simplified.LDA.get_topic_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>build dictionary for the topics which will be input for the cytoscape node, generate a random position as well</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>&lt;topic_id, (color, position)&gt;</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.get_word_probabilities">
+<span class="sig-name descname"><span class="pre">get_word_probabilities</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.get_word_probabilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>extract all the word probabilities from the lda model for each cluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict&lt;topic_id, [word_probabilitities]&gt;</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.merge_cluster">
+<span class="sig-name descname"><span class="pre">merge_cluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cluster_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.merge_cluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge clusters selected from the checklist: sum up the probs at row wise</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cluster_ids</strong> – cluster ids selected in checklist</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>model with merged clusters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.read_data">
+<span class="sig-name descname"><span class="pre">read_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.read_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the original dataset with bssoup xml extractor
+:return: data stored in BeautiflSoup instance</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.remove_document">
+<span class="sig-name descname"><span class="pre">remove_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.remove_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove documents by clicking on the delete document button</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – id of the document node</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>updated dictionary of nodes, by removing the marked document</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.reset_settings">
+<span class="sig-name descname"><span class="pre">reset_settings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.reset_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the the view and the lda class itself with the original cluster number</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.set_indexed_topic_node_df">
+<span class="sig-name descname"><span class="pre">set_indexed_topic_node_df</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.set_indexed_topic_node_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>topic dataframe in indexed format: for faster searching</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>indexed df</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.update_cosine_sim">
+<span class="sig-name descname"><span class="pre">update_cosine_sim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.update_cosine_sim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update cosine similarites</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.update_lda">
+<span class="sig-name descname"><span class="pre">update_lda</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.update_lda" title="Permalink to this definition">¶</a></dt>
+<dd><p>Re-cluster with the new cluster number (reaction of “update” button on the app)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="LDA_simplified.LDA.update_lda_related_class_elements">
+<span class="sig-name descname"><span class="pre">update_lda_related_class_elements</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#LDA_simplified.LDA.update_lda_related_class_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>update the relevant class components after cluster merge / delete , re-clustering steps</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">Viz2 2021 Lee et Al LDA</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Timea Toth, Andras Dorombozi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
