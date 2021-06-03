@@ -52,7 +52,10 @@ class LDA:
 
         self.topic_df = self.format_topics_sentence()
 
+
+
         self.topic_nodes = self.get_topic_nodes()
+        self.filtered_topic_df = None
 
         self.document_nodes = self.get_document_nodes()
 
@@ -60,7 +63,8 @@ class LDA:
 
         self.edges = self.get_filtered_edges()
         
-        self.filtered_topics_df = None
+        self.filtered_paarcord_topics_df = None
+
         self.last_selected_cluster = None
         self.last_selected_cluster_from_clust_sum_view = None
         self.top_topic_for_terms = None
@@ -292,7 +296,12 @@ class LDA:
         # key: document_id, vallue:[document_title, document_color: color of the cluster,
         # cluster_id: we need for make the invisible edges and define the belonging]
         doc_nodes = {}
-        for idx, d in self.topic_df.iterrows():
+        if self.filtered_topic_df is None:
+            iterable_df = self.topic_df.copy()
+        else:
+            iterable_df = self.filtered_topic_df.copy()
+
+        for idx, d in iterable_df.iterrows():
             cluster_id = 'Cluster ' + str(d['Dominant_Topic'])
             doc_nodes[str(d['Document_No'])] = (d['Title'], d['color'], cluster_id)
 
@@ -330,21 +339,28 @@ class LDA:
         # which throws an error
         doc_ids = sorted(self.node_dict.keys())
         cos_sim_edges = []
+
+        if self.filtered_topic_df is None:
+            available_docs = set(self.topic_df['Document_No'].tolist())
+        else:
+            available_docs = set(self.filtered_topic_df['Document_No'].tolist())
+
         for f in filtered_edges:
             idx_0 = doc_ids[f[0]]
             idx_1 = doc_ids[f[1]]
-            cos_sim_edges.append((idx_0, idx_1, self.cos_sim[f[0], f[1]]))
+            if idx_0 in available_docs and idx_1 in available_docs:
+                cos_sim_edges.append((idx_0, idx_1, self.cos_sim[f[0], f[1]]))
 
         return cos_sim_edges
 
     def get_doc_nodes_(self):
-        return self.document_nodes
+        return self.get_document_nodes()
 
     def get_topic_nodes_(self):
-        return self.topic_nodes
+        return self.get_topic_nodes()
 
     def get_edges_(self):
-        return self.edges
+        return self.get_filtered_edges()
 
     def get_parall_coords_(self):
         return self.parall_coords
@@ -432,12 +448,18 @@ class LDA:
         self.lda_model.update(self.lda_bag_of_words)
 
     #filter paralell coordinates based on the input value (>value has to be kept)
+    #Also filter the document topic dataframe for node build
     def filter_parall_coords_topic_contribution(self, value):
-        self.filtered_topics_df = self.get_topics_df().copy()
-        self.filtered_topics_df = self.filtered_topics_df[self.filtered_topics_df['Topic_Perc_Contrib'] >= value]
+        self.filtered_paarcord_topics_df = self.get_topics_df().copy()
+
+        #get_indexed_topic_node_df
+        self.filtered_paarcord_topics_df = self.filtered_paarcord_topics_df[self.filtered_paarcord_topics_df['Topic_Perc_Contrib'] >= value]
+        remained_docs = self.filtered_paarcord_topics_df['Document_No'].tolist()
+        self.filtered_topic_df = self.topic_df[self.topic_df['Document_No'].isin(remained_docs)]
+
 
     def get_filtered_parall_coords_df(self):        
-        return self.get_parall_coord_df().loc[self.filtered_topics_df['Title']]
+        return self.get_parall_coord_df().loc[self.filtered_paarcord_topics_df['Title']]
 
     #Term weight table input: extract the top n words for the currently selected topic
     def get_top_n_word_probs_for_topic_i(self, topic_id, n = 10):
@@ -558,6 +580,8 @@ class LDA:
         self.set_last_selected_cluster(None)
 
         self.col = list(self.cols.values())[:self.num_of_clusters]
+
+        self.filtered_topic_df = None
 
 
     def delete_cluster(self):
