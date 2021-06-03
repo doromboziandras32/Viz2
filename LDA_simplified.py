@@ -64,6 +64,8 @@ class LDA:
         
         self.word_probs = self.get_word_probabilities()
 
+        self.indexed_topic_node_df = self.set_indexed_topic_node_df()
+
     # Read the original dataset with bssoup xml extractor
     def read_data(self):
         with open(self.data_path, encoding="utf8",
@@ -257,6 +259,24 @@ class LDA:
             topic_dict[topic_id] = (' '.join(v).replace(' ', '\n'), self.colors[k], pos)
 
         return topic_dict
+
+    def set_indexed_topic_node_df(self):
+        df = self.topic_df.copy()
+        df.set_index('Document_No', inplace= True)
+
+        return df
+
+    def get_indexed_topic_node_df(self):
+        return self.indexed_topic_node_df
+
+    def get_color_with_opacity(self, id, is_node_id):
+        if is_node_id:
+            color = self.color_assign_to_topic_with_opacity(self.get_indexed_topic_node_df().loc[int(id)]['Dominant_Topic'])
+
+        else:
+            color = self.color_assign_to_topic_with_opacity(int(str(id).replace('Cluster ','')))
+
+        return color
 
     # build dictionary for document nodes to the cytoscape network visualization
     def get_document_nodes(self):
@@ -531,8 +551,11 @@ class LDA:
 
         self.get_top_topic_for_words()
 
+        self.indexed_topic_node_df = self.set_indexed_topic_node_df()
+
         self.set_last_selected_cluster_from_clust_sum_view(None)
         self.set_last_selected_cluster(None)
+
 
     def delete_cluster(self):
         #get the cluster id
