@@ -2,7 +2,7 @@
  
 1. Install the requirements from the attached txt:
     ```
-    pip install -r requirements.txt --no-index --find-links
+    pip install -r requirements.txt
     ```
 2. Open jupyter notebook **LDA_simplified-CLEANED.ipynb**
 
