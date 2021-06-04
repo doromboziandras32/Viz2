@@ -53,8 +53,6 @@ class LDA:
 
         self.topic_df = self.format_topics_sentence()
 
-
-
         self.topic_nodes = self.get_topic_nodes
         self.filtered_topic_df = None
 

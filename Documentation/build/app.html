@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Interactive Document Clustering</title>
+  </head>
+<body>
+    <div class="container">
+    
+        <div class="row">
+            <h1><center>Interactive document clustering</center></h1>
+            <h2><center>via Topic Modeling</center></h2>
+            <h3><center>by Andras Dörömbözi and Timea Toth</center></h3>
+        </div>
+
+    <div class="row">
+        <div class="col s8">
+            <p>Based on the paper <b>iVisClustering: An Interactive Visual Document Clusteringvia Topic Modeling</b> published by Lee at al. in 2012 we created an interactive dashboard for document clustering.</p>
+        </div>
+        <div class="col s4">
+            <center><img src="dash.png" style="height: 50%;" alt="Dashboard"></center>
+        </div>
+
+            </div>
+    <div class="row">
+    <p>The goal of this project is to separate document data with similar characteristics and assign them into clusters.  Clustering has also several challenges, such as noisy data or outliers.  This makes it even more  challenging  to  find  an  automated  clustering  algorithm,  since  every  dataset  differs,  and  just because one method works really good on one dataset, it doesn’t mean that it would fit also new data. The amount of online documents is growing really fast in the last years. To cluster these documents,the authors developed a visual analysis system, iVisClustering, that performs interactive clusteringfor  document  data. </p>
+
+    <h3>Overview of the implementation</h3>
+
+
+    <p>We were using the gensim package in python for topic modeling and we extended it with our own functions to make it more suitable for this task. The dashboard was implemented using Dash, which can provide interactivity to the user.</p>
+
+    <p>General  Analysis  Procedure: After  the  automatic  clustering  (k  clusters)  the  data  will  be cleaned.  The user can perform some cluster level interactions like combining similar clusters and removing clusters.  The meaning of each cluster will be refined using the LDA inference algorithm.  The last set is to fine-tune the clusters such as reviewing the documents.  With this five steps, the user will be able to maintain meaningful clusters for the data.</p>
+
+
+    
+    <h3>Views of the dashboard</h3>
+    <ul>
+    <li>
+    <p><b>Cluster Relation View (A)</p></b>
+    <p>The Cluster  Relation  View represents  the  datasets  as  colored  points,  where  the  points  with  thesame color belongs to the same cluster. In case of clicking on the document, on the left side the document title can be seen and it also pops up on the Document View (F). In case the user doesn't find this document relevant, it can be deleted by klicking on the delete button. The slider for the cosine similarity colors the edges between the documents, which have a higher cosine similarity than the choosen value.</p> </li>
+    <li>
+    <p><b>Cluster Summary View (B)</p></b>
+    If the user klicks on a cluster node on the Cluster Relation View(A), the Cluster Summary View pops up. Here we can see the clusters with the most frequent words better. In case of unnesesarry/unwanted cluster, the user can delete it by klicking on the delete button. If two clusters are really similar and the user can merge the selected clusters.</li>
+    <li>
+    <p><b>Term Weight View (C)</p></b>
+    If the user klicks on a cluster node on the Cluster Relation View(A), the Term Weight View pops up. On the horizontal barplot the words with the highest probability of the choosen cluster can be seen. The values on the barchart represent the probability for a word in the cluster.</li>
+    <li>
+    <p><b>Parallel Coordinates View (D)</p></b>
+    A  Parallel  Coordinates  plot  is  a  simple  way  to  visualize  multi-dimensional data.  The lines in the plots are representing the documents and the colors theclusters, the document belongs to.  The slider abowe the plot provides the user the possibility to filter out some noisy documents. </li>
+        <li>
+    <p><b>Word Cloud (E)</p></b>
+    The Wordcloud gives the user the possibility to look at the most representative words of the cluster. The size of the words depends on the probability of the word in the cluster. It can also help to get a better understandign of the choosen cluster </li>
+
+    
+    <li>
+    <p><b>Document View (F)</p></b>
+    This view shows us the document itself, which helps us to understand why does a certain document belong to a cluster (in connection with the Cluster Relation View).  This view also highlights terms in different colors according to which topic the terms belong to.
+    </li>
+
+    </ul>
+    
+    
+    <h3>Corpus of documents </h3>
+    <p>Collection of Infovis and Vast papers between 1997 and 2009, which contains 454 documents. <a href="https://www.cc.gatech.edu/gvu/ii/jigsaw/datafiles.html"></p> Download data </a></p>
+
+
+
+
+
+
+    <div class="row">
+        <h1>Links</h1>
+        <p><a href="../src">Source code</a></p>
+        <p><a href="index.html">Program</a></p>
+        <p><a href="../src/README.md">Documentation / Usage</a></p>
+    </div>
+
+
+    <div class="row">
+    <h1>References</h1>
+    <p> <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-8659.2012.03108.x?casa_token=v5-L4dZ7vWUAAAAA%3AyO3rIHYREv9oFqTAo4WZeiPbsAKspHyej4hTL4ekPEHEGMpEWutjEP2v8mlJ4J3wqmlZG_STaG4xP9hO">Lee at al. "iVisClustering: An Interactive Visual Document Clusteringvia Topic Modeling" 2012.</a></p>
+    <p><a href="https://radimrehurek.com/gensim/">GENSIM</a> topic modeling for humans</p>
+    
+    
+
+
+</div>
+</div>
+
+
+</body>
+
+</html>

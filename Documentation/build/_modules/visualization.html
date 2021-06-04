@@ -1,0 +1,364 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>visualization &mdash; Viz2 2021 Lee et Al LDA 2021 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Viz2 2021 Lee et Al LDA
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Viz2 2021 Lee et Al LDA</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>visualization</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for visualization</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># coding: utf-8</span>
+
+<span class="c1"># In[12]:</span>
+
+
+<span class="c1"># In[14]:</span>
+
+
+<div class="viewcode-block" id="get_graph_topic_nodes"><a class="viewcode-back" href="../index.html#visualization.get_graph_topic_nodes">[docs]</a><span class="k">def</span> <span class="nf">get_graph_topic_nodes</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    extract the color from class settings: will be defined in stylesheet</span>
+<span class="sd">    the label is the top 4 words</span>
+<span class="sd">    </span>
+<span class="sd">    :return: topic nodes in cytoscape format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">id_</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">]},</span>
+             <span class="s1">&#39;classes&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;topic_</span><span class="si">{</span><span class="n">vals</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>                                                                                        <span class="c1">#,&quot;opacity&quot;: 0.1</span>
+            <span class="p">,</span><span class="s1">&#39;position&#39;</span><span class="p">:{</span><span class="s1">&#39;x&#39;</span> <span class="p">:</span> <span class="n">vals</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="p">,</span> <span class="s1">&#39;y&#39;</span> <span class="p">:</span> <span class="n">vals</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">]}</span>
+            <span class="p">}</span> <span class="k">for</span> <span class="n">id_</span><span class="p">,</span><span class="n">vals</span> <span class="ow">in</span> <span class="n">lda</span><span class="o">.</span><span class="n">get_topic_nodes_</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>                        
+        <span class="p">]</span></div>
+
+
+<span class="c1"># In[15]:</span>
+
+
+<span class="c1"># document nodes: id by document id, class defined in stylesheet,</span>
+<span class="c1"># define the color and belonging</span>
+<div class="viewcode-block" id="get_graph_document_nodes"><a class="viewcode-back" href="../index.html#visualization.get_graph_document_nodes">[docs]</a><span class="k">def</span> <span class="nf">get_graph_document_nodes</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :return: graph document nodes with the proper coloring in cytoscape format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span>                       
+            <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">id_</span><span class="p">,</span><span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">},</span> 
+             <span class="s1">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="s1">&#39;circle&#39;</span><span class="p">},</span>
+             <span class="s1">&#39;classes&#39;</span><span class="p">:</span> <span class="n">vals</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+             <span class="c1">#vals[1]</span>
+            <span class="p">}</span> <span class="k">for</span> <span class="n">id_</span><span class="p">,</span><span class="n">vals</span> <span class="ow">in</span> <span class="n">lda</span><span class="o">.</span><span class="n">get_doc_nodes_</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>                        
+        <span class="p">]</span></div>
+
+
+<span class="c1"># In[16]:</span>
+
+
+
+<div class="viewcode-block" id="get_graph_cos_sim_edges"><a class="viewcode-back" href="../index.html#visualization.get_graph_cos_sim_edges">[docs]</a><span class="k">def</span> <span class="nf">get_graph_cos_sim_edges</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :return: edges within document based on cosine similarity</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> -&gt; </span><span class="si">{</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">}}</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">lda</span><span class="o">.</span><span class="n">get_edges_</span><span class="p">()</span>
+    <span class="p">]</span></div>
+
+
+<span class="c1"># In[17]:</span>
+
+
+<span class="c1"># edges between the  topics and the related documents: they are invisible</span>
+<div class="viewcode-block" id="get_doc_topic_edges"><a class="viewcode-back" href="../index.html#visualization.get_doc_topic_edges">[docs]</a><span class="k">def</span> <span class="nf">get_doc_topic_edges</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :return: Invisible edges within  document nodes and their dominant topic</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span>  <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="n">id_</span><span class="p">,</span> <span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">vals</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">id_</span><span class="si">}</span><span class="s1"> -&gt; </span><span class="si">{</span><span class="n">vals</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span><span class="s2">&quot;edgeLength&quot;</span><span class="p">:</span><span class="mi">200</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+            <span class="s1">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;line-color&#39;</span><span class="p">:</span> <span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="s2">&quot;opacity&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}}</span>  <span class="k">for</span> <span class="n">id_</span><span class="p">,</span><span class="n">vals</span> <span class="ow">in</span> <span class="n">lda</span><span class="o">.</span><span class="n">get_doc_nodes_</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> 
+        <span class="p">]</span></div>
+
+
+<span class="c1"># In[18]:</span>
+
+
+<span class="c1"># Update stylessheet:  define all the new clusters class settings</span>
+<span class="c1"># after the update_lda step e.g.</span>
+<div class="viewcode-block" id="update_stylesheet"><a class="viewcode-back" href="../index.html#visualization.update_stylesheet">[docs]</a><span class="k">def</span> <span class="nf">update_stylesheet</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Update stylessheet:  define all the new clusters class settings (colors etc.)</span>
+
+<span class="sd">    :return: Updated graph stylesheet</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">vals</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">id_</span><span class="p">,</span><span class="n">vals</span> <span class="ow">in</span> <span class="n">lda</span><span class="o">.</span><span class="n">get_doc_nodes_</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()]))</span>
+    <span class="c1">#get the new colors for the topics and the nodes</span>
+    <span class="n">node_classes</span> <span class="o">=</span> <span class="p">[{</span>
+                    <span class="s1">&#39;selector&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;.</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s1">&#39;background-color&#39;</span><span class="p">:</span> <span class="n">c</span>
+                    <span class="p">}</span>
+                <span class="p">}</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">colors</span><span class="p">]</span>
+    
+    <span class="n">topic_classes</span> <span class="o">=</span> <span class="p">[{</span>
+                    <span class="s1">&#39;selector&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;.topic_</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;border-color&#39;</span><span class="p">:</span> <span class="n">c</span><span class="p">,</span>
+               <span class="s1">&#39;border-width&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>        
+               <span class="s1">&#39;background-color&#39;</span><span class="p">:</span> <span class="s1">&#39;white&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="s1">&#39;rectangle&#39;</span><span class="p">,</span><span class="s1">&#39;content&#39;</span><span class="p">:</span> <span class="s1">&#39;data(label)&#39;</span><span class="p">,</span><span class="s1">&#39;text-halign&#39;</span><span class="p">:</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;text-valign&#39;</span><span class="p">:</span><span class="s1">&#39;center&#39;</span><span class="p">,</span><span class="s1">&#39;text-wrap&#39;</span><span class="p">:</span> <span class="s1">&#39;wrap&#39;</span><span class="p">,</span><span class="s1">&#39;width&#39;</span><span class="p">:</span><span class="s1">&#39;label&#39;</span><span class="p">,</span><span class="s1">&#39;height&#39;</span><span class="p">:</span><span class="s1">&#39;label&#39;</span><span class="p">}</span>
+                <span class="p">}</span><span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">colors</span>     <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">node_classes</span> <span class="o">+</span> <span class="n">topic_classes</span>   <span class="c1"># Class selectors</span></div>
+
+
+<span class="c1"># In[19]:</span>
+
+
+<div class="viewcode-block" id="build_cluster_summary_view"><a class="viewcode-back" href="../index.html#visualization.build_cluster_summary_view">[docs]</a><span class="k">def</span> <span class="nf">build_cluster_summary_view</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    prepare the data for the cluster summary view</span>
+
+<span class="sd">    :return: data in cluster summary view feedable format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">clust</span> <span class="o">=</span> <span class="s1">&#39;Clusters&#39;</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">clust</span><span class="p">]</span>
+    <span class="n">parents</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
+    <span class="n">marker_colors</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;white&quot;</span><span class="p">]</span>
+    <span class="n">text_info</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">id_</span><span class="p">,</span><span class="n">vals</span> <span class="ow">in</span> <span class="n">lda</span><span class="o">.</span><span class="n">get_topic_nodes_</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">id_</span><span class="p">)</span>
+        <span class="n">text_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&lt;br&gt;&#39;</span><span class="p">))</span>
+        <span class="n">parents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clust</span><span class="p">)</span>
+        <span class="n">marker_colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">clust_sum_view</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">clust_sum_view</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">labels</span>
+    <span class="n">clust_sum_view</span><span class="p">[</span><span class="s1">&#39;parents&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">parents</span>
+    <span class="n">clust_sum_view</span><span class="p">[</span><span class="s1">&#39;marker_colors&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">marker_colors</span>
+    <span class="n">clust_sum_view</span><span class="p">[</span><span class="s1">&#39;text_info&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">text_info</span>
+    <span class="k">return</span>  <span class="n">clust_sum_view</span></div>
+
+
+<span class="c1"># In[20]:</span>
+
+
+<div class="viewcode-block" id="build_cluster_merge_list"><a class="viewcode-back" href="../index.html#visualization.build_cluster_merge_list">[docs]</a><span class="k">def</span> <span class="nf">build_cluster_merge_list</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prepare the checklist for the merge cluster functionality</span>
+
+<span class="sd">    :return: dash checklist content with proper label</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">clusters</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">lda</span><span class="o">.</span><span class="n">get_topic_nodes</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">clusters</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;Cluster &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)})</span>
+
+    <span class="k">return</span> <span class="n">clusters</span></div>
+
+
+<span class="c1"># In[21]:</span>
+
+
+
+
+<div class="viewcode-block" id="plot_wordcloud"><a class="viewcode-back" href="../index.html#visualization.plot_wordcloud">[docs]</a><span class="k">def</span> <span class="nf">plot_wordcloud</span><span class="p">(</span><span class="n">number_of_words</span> <span class="o">=</span> <span class="mi">20</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Wordcloud plot</span>
+
+<span class="sd">    :param number_of_words: number of words to be plotted (default: 20)</span>
+<span class="sd">    :return: Wordcloud plot (image, not interactive, but the words are not overlapped)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">clust_id</span> <span class="o">=</span><span class="n">lda</span><span class="o">.</span><span class="n">get_last_selected_cluster</span><span class="p">()</span>
+    <span class="n">words</span> <span class="o">=</span> <span class="n">lda</span><span class="o">.</span><span class="n">get_top_n_word_probs_for_topic_i</span><span class="p">(</span><span class="n">clust_id</span><span class="p">,</span> <span class="n">number_of_words</span><span class="p">)[</span><span class="s1">&#39;Words&#39;</span><span class="p">]</span>
+    <span class="n">probs</span> <span class="o">=</span> <span class="n">lda</span><span class="o">.</span><span class="n">get_top_n_word_probs_for_topic_i</span><span class="p">(</span><span class="n">clust_id</span><span class="p">,</span> <span class="n">number_of_words</span><span class="p">)[</span><span class="s1">&#39;Probabilities&#39;</span><span class="p">]</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="n">a</span> <span class="p">:</span> <span class="n">x</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">words</span><span class="p">,</span> <span class="n">probs</span><span class="p">)}</span>
+    <span class="n">wc</span> <span class="o">=</span> <span class="n">WordCloud</span><span class="p">(</span><span class="n">background_color</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">480</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">360</span><span class="p">)</span>
+    <span class="n">wc</span><span class="o">.</span><span class="n">fit_words</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="c1">#lda.get_colormap_for_cluster(clust_id)</span>
+    <span class="n">wc</span><span class="o">.</span><span class="n">recolor</span><span class="p">(</span><span class="n">colormap</span><span class="o">=</span><span class="n">lda</span><span class="o">.</span><span class="n">get_colormap_for_cluster</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">wc</span><span class="o">.</span><span class="n">to_image</span><span class="p">()</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Timea Toth, Andras Dorombozi.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

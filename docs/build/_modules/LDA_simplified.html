@@ -1,0 +1,977 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>LDA_simplified &mdash; Viz2 2021 Lee et Al LDA 2021 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Viz2 2021 Lee et Al LDA
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Viz2 2021 Lee et Al LDA</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>LDA_simplified</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for LDA_simplified</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">from</span> <span class="nn">nltk.corpus</span> <span class="kn">import</span> <span class="n">stopwords</span>
+<span class="kn">from</span> <span class="nn">nltk.tokenize</span> <span class="kn">import</span> <span class="n">wordpunct_tokenize</span>
+<span class="kn">from</span> <span class="nn">nltk.stem</span> <span class="kn">import</span> <span class="n">WordNetLemmatizer</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">from</span> <span class="nn">gensim.corpora</span> <span class="kn">import</span> <span class="n">Dictionary</span>
+<span class="kn">from</span> <span class="nn">gensim.models</span> <span class="kn">import</span> <span class="n">LdaMulticore</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">colors</span> <span class="k">as</span> <span class="n">mcolors</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="kn">import</span> <span class="n">TfidfVectorizer</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics.pairwise</span> <span class="kn">import</span> <span class="n">cosine_similarity</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>  <span class="c1"># pip install pandas</span>
+
+
+<span class="c1"># noinspection SpellCheckingInspection</span>
+
+<div class="viewcode-block" id="LDA"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA">[docs]</a><span class="k">class</span> <span class="nc">LDA</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Init of class: load and clean the data, and make the first ldsa clustering with the the given k cluster</span>
+<span class="sd">    :param: k: desired number of clusters used in LDA , should be at least 2, and 10 at maximum</span>
+<span class="sd">    :param: path: Load path of the file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">orig_clust_num</span> <span class="o">=</span> <span class="n">k</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_of_clusters</span> <span class="o">=</span> <span class="n">k</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="c1"># Some default value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cosine_sim_threshold</span> <span class="o">=</span> <span class="mf">0.3</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">word_prob_range</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1">#Build up colors dictionary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">cmaps</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Blues&#39;</span><span class="p">,</span> <span class="s1">&#39;Oranges&#39;</span><span class="p">,</span> <span class="s1">&#39;Greens&#39;</span><span class="p">,</span> <span class="s1">&#39;Reds&#39;</span><span class="p">,</span> <span class="s1">&#39;Purples&#39;</span><span class="p">,</span> <span class="s1">&#39;copper&#39;</span><span class="p">,</span> <span class="s1">&#39;RdPu&#39;</span><span class="p">,</span> <span class="s1">&#39;Greys&#39;</span><span class="p">,</span> <span class="s1">&#39;YlGn&#39;</span><span class="p">,</span> <span class="s1">&#39;BuGn&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">colormaps</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mcolors</span><span class="o">.</span><span class="n">TABLEAU_COLORS</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">cl</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;tab:&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cl</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">colormaps</span><span class="p">[</span><span class="n">cl</span><span class="p">]</span> <span class="o">=</span> <span class="n">cmaps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">colors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">col</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">values</span><span class="p">())[:</span><span class="bp">self</span><span class="o">.</span><span class="n">num_of_clusters</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_read</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_data</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_filtered</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clean_lemmatize_data</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lda_bag_of_words</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_bag_of_words_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lda</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_most_rel_topics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_most_relevant_topics</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">parall_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parall_coord_df</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">topic_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_topics_sentence</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">topic_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_topic_nodes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_topic_df</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">document_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_document_nodes</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cos_sim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_cosine_similarity</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filtered_edges</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_paarcord_topics_df</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_selected_cluster</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_selected_cluster_from_clust_sum_view</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_topic_for_terms</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clusters_to_merge</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_top_topic_for_words</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">word_probs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_word_probabilities</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">indexed_topic_node_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_indexed_topic_node_df</span><span class="p">()</span>
+
+<div class="viewcode-block" id="LDA.read_data"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.read_data">[docs]</a>    <span class="k">def</span> <span class="nf">read_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read the original dataset with bssoup xml extractor</span>
+<span class="sd">        :return: data stored in BeautiflSoup instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">,</span>
+                  <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fl</span><span class="p">:</span>
+            <span class="n">fle</span> <span class="o">=</span> <span class="n">fl</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">bs_data</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">fle</span><span class="p">,</span> <span class="s2">&quot;xml&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">bs_data</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">filter_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         Filter for the paper-defined time interval(1994-2010)</span>
+<span class="sd">         Separate the title and the document description</span>
+
+<span class="sd">         Store in dictionary format:</span>
+<span class="sd">         k: Title , v: document text</span>
+
+<span class="sd">        :return: Filtered data stored in dictionary&lt;title, document text&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_read</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            
+        <span class="n">filtered_docs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Filter the years</span>
+                <span class="n">date</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;year&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+                <span class="k">if</span> <span class="mi">1994</span> <span class="o">&lt;</span> <span class="n">date</span> <span class="o">&lt;</span> <span class="mi">2010</span><span class="p">:</span>
+                    <span class="n">doc_text</span> <span class="o">=</span> <span class="n">tag</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;docText&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>
+                    <span class="n">doc_splitted</span> <span class="o">=</span> <span class="n">doc_text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="c1"># Fitler if multiple linebreaks separate the title and the text</span>
+                    <span class="n">doc_splitted</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">doc_splitted</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+                    <span class="c1"># Extract the title</span>
+                    <span class="n">title</span> <span class="o">=</span> <span class="n">doc_splitted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="c1"># Assign the text  to the title in the dictionary</span>
+                    <span class="n">filtered_docs</span><span class="p">[</span><span class="n">title</span><span class="p">]</span> <span class="o">=</span> <span class="n">doc_splitted</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="k">return</span> <span class="n">filtered_docs</span>
+
+<div class="viewcode-block" id="LDA.get_k"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.get_k">[docs]</a>    <span class="k">def</span> <span class="nf">get_k</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: number of clusters specified</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_of_clusters</span></div>
+
+<div class="viewcode-block" id="LDA.clean_lemmatize_data"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.clean_lemmatize_data">[docs]</a>    <span class="k">def</span> <span class="nf">clean_lemmatize_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cleaning of data based on the paper description and with further useful approaches:</span>
+<span class="sd">            - tokenize</span>
+<span class="sd">            - removal of numeric characters</span>
+<span class="sd">            - removal of punctuations</span>
+<span class="sd">            - removal of stopwords</span>
+<span class="sd">            - lemmatize the &#39;cleaned data&#39;</span>
+
+<span class="sd">        :return: dict&lt;document_number, title&gt; , dict&lt;title, cleaned_text&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">sw</span> <span class="o">=</span> <span class="n">stopwords</span><span class="o">.</span><span class="n">words</span><span class="p">(</span><span class="s1">&#39;english&#39;</span><span class="p">)</span>
+        <span class="n">lemmatizer</span> <span class="o">=</span> <span class="n">WordNetLemmatizer</span><span class="p">()</span>
+        <span class="n">punctuations</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">punctuation</span><span class="p">)</span>
+        <span class="n">cleaned_texts</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">node_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">b_u</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_filtered</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="c1">#Tokenize the data on the delimiterss</span>
+            <span class="n">b_tok</span> <span class="o">=</span> <span class="n">wordpunct_tokenize</span><span class="p">(</span>
+                <span class="n">b_u</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;Case study&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;VRMosaic&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;Research report&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+            <span class="c1">#Remove punctuations</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">maketrans</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">string</span><span class="o">.</span><span class="n">punctuation</span><span class="p">))</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">b_tok</span><span class="p">]</span>
+
+            <span class="c1">#lowercase all the words</span>
+            <span class="n">b_tok</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]</span>
+
+            <span class="c1">#Remove empty elements, stopwords, punctuations, and digits</span>
+            <span class="n">b_cleaned</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">b_tok</span> <span class="k">if</span>
+                         <span class="ow">not</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">sw</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">punctuations</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">b</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="n">b</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1">#Lemmatize the cleaned words</span>
+            <span class="n">b_lemm</span> <span class="o">=</span> <span class="p">[</span><span class="n">lemmatizer</span><span class="o">.</span><span class="n">lemmatize</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">b_cleaned</span><span class="p">]</span>
+
+            <span class="c1"># dictionary - key: title , value: cleaned document</span>
+            <span class="n">cleaned_texts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">b_lemm</span>
+
+            <span class="c1">#node dictionary for the networkd graph: assign id to titles , this will help to extract the node selection</span>
+            <span class="c1"># to refer to the proper document</span>
+            <span class="n">node_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
+
+        <span class="k">return</span> <span class="n">cleaned_texts</span><span class="p">,</span> <span class="n">node_dict</span></div>
+
+<div class="viewcode-block" id="LDA.build_bag_of_words_model"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.build_bag_of_words_model">[docs]</a>    <span class="k">def</span> <span class="nf">build_bag_of_words_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build the bag of words model from the cleaned data</span>
+<span class="sd">        And the dictionary of the unique words</span>
+
+<span class="sd">        :return: dictonary of all words, bag of words model of the documents</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">lda_dictionary</span> <span class="o">=</span> <span class="n">Dictionary</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">lda_bag_of_words</span> <span class="o">=</span> <span class="p">[</span><span class="n">lda_dictionary</span><span class="o">.</span><span class="n">doc2bow</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">allow_update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+
+        <span class="k">return</span> <span class="n">lda_dictionary</span><span class="p">,</span> <span class="n">lda_bag_of_words</span></div>
+
+<div class="viewcode-block" id="LDA.get_lda"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.get_lda">[docs]</a>    <span class="k">def</span> <span class="nf">get_lda</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Model LDA with the given cluster number and the built up bag of words model</span>
+
+<span class="sd">        :return: lda model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">lda_model</span><span class="p">:</span> <span class="n">LdaMulticore</span> <span class="o">=</span> <span class="n">LdaMulticore</span><span class="p">(</span><span class="n">corpus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_bag_of_words</span><span class="p">,</span>
+                                               <span class="n">id2word</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_dict</span><span class="p">,</span>
+                                               <span class="n">num_topics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_of_clusters</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lda_model</span></div>
+
+<div class="viewcode-block" id="LDA.get_most_relevant_topics"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.get_most_relevant_topics">[docs]</a>    <span class="k">def</span> <span class="nf">get_most_relevant_topics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        extract the most relevant top 4 terms for the topics (relevant for topic node representation)</span>
+
+<span class="sd">        :return:dict&lt;cluster_id, [top_4_terms_for_cluster]&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">term_topics</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_of_clusters</span><span class="p">):</span>
+            <span class="n">topic_id</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="n">term_topics</span><span class="p">[</span><span class="n">topic_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">ld</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="o">.</span><span class="n">get_topic_terms</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">topn</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+                <span class="n">term_topics</span><span class="p">[</span><span class="n">topic_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_dict</span><span class="p">[</span><span class="n">ld</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+
+        <span class="k">return</span> <span class="n">term_topics</span></div>
+
+<div class="viewcode-block" id="LDA.get_col"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.get_col">[docs]</a>    <span class="k">def</span> <span class="nf">get_col</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: cluster colors (extracted from matplotlib colors)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">col</span></div>
+
+<div class="viewcode-block" id="LDA.get_word_probabilities"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.get_word_probabilities">[docs]</a>    <span class="k">def</span> <span class="nf">get_word_probabilities</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        extract all the word probabilities from the lda model for each cluster</span>
+
+<span class="sd">        :return: dict&lt;topic_id, [word_probabilitities]&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">word_probs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_of_clusters</span><span class="p">):</span>
+            <span class="n">topic_id</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="n">word_probs</span><span class="p">[</span><span class="n">topic_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="o">.</span><span class="n">get_topic_terms</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">topn</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_dict</span><span class="p">)):</span>
+                <span class="n">word_probs</span><span class="p">[</span><span class="n">topic_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_dict</span><span class="p">[</span><span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">l</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="k">return</span> <span class="n">word_probs</span></div>
+
+<div class="viewcode-block" id="LDA.get_parall_coord_df"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.get_parall_coord_df">[docs]</a>    <span class="k">def</span> <span class="nf">get_parall_coord_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build pandas dataframe for the paralell coordinates view</span>
+
+<span class="sd">        :return: pandas dataframe for documents with their dominant topic</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parall_coords</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">lda_bag_of_words</span><span class="p">):</span>
+            <span class="n">parall_coords</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
+
+        <span class="n">parall_coord_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">parall_coords</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+        <span class="n">parall_coord_df</span> <span class="o">=</span> <span class="n">parall_coord_df</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">parall_coord_df</span> <span class="o">=</span> <span class="n">parall_coord_df</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+        <span class="n">parall_coord_df</span> <span class="o">=</span> <span class="n">parall_coord_df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">parall_coord_df</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">parall_coord_df</span><span class="p">[</span><span class="s1">&#39;Dominant_Topic&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parall_coord_df</span><span class="o">.</span><span class="n">idxmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;columns&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">parall_coord_df</span></div>
+
+<div class="viewcode-block" id="LDA.color_assign_to_topic"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.color_assign_to_topic">[docs]</a>    <span class="k">def</span> <span class="nf">color_assign_to_topic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param x: topic id</span>
+<span class="sd">        :return: color assigned to topic x (dict)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="n">x</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="LDA.color_assign_to_topic_with_opacity"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.color_assign_to_topic_with_opacity">[docs]</a>    <span class="k">def</span> <span class="nf">color_assign_to_topic_with_opacity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Assign color to topics with opacity</span>
+
+<span class="sd">        :param x: topic id</span>
+<span class="sd">        :return: opaque color for term highlighting</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">color_with_opacity</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">mcolors</span><span class="o">.</span><span class="n">to_rgba</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="n">x</span><span class="p">]))</span>
+        <span class="n">color_with_opacity</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.3</span>
+        <span class="n">rgba</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;rgba(</span><span class="si">{</span><span class="n">color_with_opacity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">255</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">color_with_opacity</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">255</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">color_with_opacity</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="mi">255</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">color_with_opacity</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s1">)&#39;</span>
+        <span class="k">return</span> <span class="n">rgba</span></div>
+
+<div class="viewcode-block" id="LDA.format_topics_sentence"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.format_topics_sentence">[docs]</a>    <span class="k">def</span> <span class="nf">format_topics_sentence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        build up a pandas dataframe with several useful informations: document - Topic belongings, contribution,</span>
+<span class="sd">        assigned color keywords</span>
+
+<span class="sd">        :return: pd.DataFrame(&#39;Document_No&#39;, &#39;Dominant_Topic&#39;, &#39;Topic_Perc_Contrib&#39;, &#39;Keywords&#39;, &#39;Text&#39;, &#39;Title&#39;,&#39;color&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sent_topics_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+        <span class="c1"># Get main topic in each document</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row_list</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_bag_of_words</span><span class="p">]):</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">row_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="o">.</span><span class="n">per_word_topics</span> <span class="k">else</span> <span class="n">row_list</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># Get the Dominant topic, Perc Contribution and Keywords for each document</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">topic_num</span><span class="p">,</span> <span class="n">prop_topic</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># =&gt; dominant topic</span>
+                    <span class="n">wp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="o">.</span><span class="n">show_topic</span><span class="p">(</span><span class="n">topic_num</span><span class="p">)</span>
+                    <span class="n">topic_keywords</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">word</span> <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">wp</span><span class="p">])</span>
+                    <span class="n">sent_topics_df</span> <span class="o">=</span> <span class="n">sent_topics_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">topic_num</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">prop_topic</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">topic_keywords</span><span class="p">]),</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">break</span>
+        <span class="n">sent_topics_df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Dominant_Topic&#39;</span><span class="p">,</span> <span class="s1">&#39;Perc_Contribution&#39;</span><span class="p">,</span> <span class="s1">&#39;Topic_Keywords&#39;</span><span class="p">]</span>
+
+        <span class="n">titles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">texts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="n">document_nums</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="n">titles</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">titles</span><span class="p">)</span>
+        <span class="c1"># Add original text to the end of the output</span>
+        <span class="n">contents</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span>
+        <span class="n">sent_topics_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">document_nums</span><span class="p">,</span> <span class="n">sent_topics_df</span><span class="p">,</span> <span class="n">contents</span><span class="p">,</span> <span class="n">titles</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sent_topics_df</span> <span class="o">=</span> <span class="n">sent_topics_df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">sent_topics_df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Document_No&#39;</span><span class="p">,</span> <span class="s1">&#39;Dominant_Topic&#39;</span><span class="p">,</span> <span class="s1">&#39;Topic_Perc_Contrib&#39;</span><span class="p">,</span> <span class="s1">&#39;Keywords&#39;</span><span class="p">,</span> <span class="s1">&#39;Text&#39;</span><span class="p">,</span> <span class="s1">&#39;Title&#39;</span><span class="p">]</span>
+        <span class="c1"># Convert dominaant topic to int</span>
+        <span class="n">sent_topics_df</span><span class="p">[</span><span class="s1">&#39;Dominant_Topic&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sent_topics_df</span><span class="p">[</span><span class="s1">&#39;Dominant_Topic&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">sent_topics_df</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sent_topics_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">color_assign_to_topic</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;Dominant_Topic&#39;</span><span class="p">]),</span>
+                                                       <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">sent_topics_df</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">get_topic_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        build dictionary for the topics which will be input for the cytoscape node, generate a random position as well</span>
+
+<span class="sd">        :return: &lt;topic_id, (color, position)&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">topic_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lda_most_rel_topics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1">#random position</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">900</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">topic_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Cluster </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="c1"># key: topic id, value: [top terms for the topic with linebreak, color assigned to topic, position of the</span>
+            <span class="c1"># topic node]</span>
+            <span class="n">topic_dict</span><span class="p">[</span><span class="n">topic_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">pos</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">topic_dict</span>
+
+<div class="viewcode-block" id="LDA.set_indexed_topic_node_df"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.set_indexed_topic_node_df">[docs]</a>    <span class="k">def</span> <span class="nf">set_indexed_topic_node_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        topic dataframe in indexed format: for faster searching</span>
+
+<span class="sd">        :return: indexed df</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topic_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;Document_No&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">df</span></div>
+
+    <span class="k">def</span> <span class="nf">get_indexed_topic_node_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">indexed_topic_node_df</span>
+
+<div class="viewcode-block" id="LDA.get_color_with_opacity"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.get_color_with_opacity">[docs]</a>    <span class="k">def</span> <span class="nf">get_color_with_opacity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">is_node_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param id: id of the node /cluster</span>
+<span class="sd">        :param is_node_id: bool, whether the selected cyoscape element is document node or cluster node</span>
+<span class="sd">        :return: opaque color for the background</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_node_id</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">color_assign_to_topic_with_opacity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_indexed_topic_node_df</span><span class="p">()</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">id</span><span class="p">)][</span><span class="s1">&#39;Dominant_Topic&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">color_assign_to_topic_with_opacity</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;Cluster &#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)))</span>
+
+        <span class="k">return</span> <span class="n">color</span></div>
+
+<div class="viewcode-block" id="LDA.get_colormap_for_cluster"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.get_colormap_for_cluster">[docs]</a>    <span class="k">def</span> <span class="nf">get_colormap_for_cluster</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build colormap for wordcloud</span>
+
+<span class="sd">        :return: colormap related to current cluster (assigned by the already related cluster color)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">colormaps</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_last_selected_cluster</span><span class="p">())]]</span></div>
+
+<div class="viewcode-block" id="LDA.get_document_nodes"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.get_document_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">get_document_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        build dictionary for document nodes to the cytoscape network visualization</span>
+
+<span class="sd">        :return: dict&lt;document_id,(document_title, document_color: color of the cluster,cluster)&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">doc_nodes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_topic_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">iterable_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topic_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">iterable_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_topic_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">iterable_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">cluster_id</span> <span class="o">=</span> <span class="s1">&#39;Cluster &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;Dominant_Topic&#39;</span><span class="p">])</span>
+            <span class="n">doc_nodes</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;Document_No&#39;</span><span class="p">])]</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;Title&#39;</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">],</span> <span class="n">cluster_id</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">doc_nodes</span></div>
+
+    <span class="c1">#</span>
+<div class="viewcode-block" id="LDA.calculate_cosine_similarity"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.calculate_cosine_similarity">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_cosine_similarity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate Cosine similarity between the documents with sklearn implementation</span>
+<span class="sd">        Also removing the duplicities (taking only the upper trinagle elements from the result)</span>
+<span class="sd">        In order to avoid duplicate edges on the graph</span>
+
+<span class="sd">        :return: cosine_sim_matrix = np.array([number_of_documents,number_of_documents])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1">#prepare input for the sklearn cosine similarity function</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]]))</span>
+
+        <span class="n">vec</span> <span class="o">=</span> <span class="n">TfidfVectorizer</span><span class="p">()</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">vec</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the pairwise cosine similarities (depending on the amount of data that you are going to have this</span>
+        <span class="c1"># could take a while)</span>
+        <span class="n">matrix_similarity</span> <span class="o">=</span> <span class="n">cosine_similarity</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1"># Remove duplicates + diagonal: cosine similarity returns a symmetric matrix, where the diagonal and the</span>
+        <span class="c1"># lower or upper  triangular is irrelevant</span>
+        <span class="n">tril_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tril_indices</span><span class="p">(</span><span class="n">matrix_similarity</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">mat_sim_upper</span> <span class="o">=</span> <span class="n">matrix_similarity</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">mat_sim_upper</span><span class="p">[</span><span class="n">tril_ind</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">mat_sim_upper</span></div>
+
+<div class="viewcode-block" id="LDA.get_filtered_edges"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.get_filtered_edges">[docs]</a>    <span class="k">def</span> <span class="nf">get_filtered_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the visible edges (edges between document nodes over the cosine sim threshold</span>
+
+<span class="sd">        :return: [(node_0, node_1, cosine_similarity value),...]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#filter edges based on the given threshold</span>
+        <span class="n">filtered_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cos_sim</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cosine_sim_threshold</span><span class="p">)</span>
+
+        <span class="c1"># get the document ids -&gt; since document removal is also a function, simply returning the index at the matching</span>
+        <span class="c1"># points are not enough, since then the graph might attempt to create edge with a non-existing document,</span>
+        <span class="c1"># which throws an error</span>
+        <span class="n">doc_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">cos_sim_edges</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_topic_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">available_docs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">topic_df</span><span class="p">[</span><span class="s1">&#39;Document_No&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">available_docs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filtered_topic_df</span><span class="p">[</span><span class="s1">&#39;Document_No&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">filtered_edges</span><span class="p">:</span>
+            <span class="n">idx_0</span> <span class="o">=</span> <span class="n">doc_ids</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="n">idx_1</span> <span class="o">=</span> <span class="n">doc_ids</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="n">idx_0</span> <span class="ow">in</span> <span class="n">available_docs</span> <span class="ow">and</span> <span class="n">idx_1</span> <span class="ow">in</span> <span class="n">available_docs</span><span class="p">:</span>
+                <span class="n">cos_sim_edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">idx_0</span><span class="p">,</span> <span class="n">idx_1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cos_sim</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]]))</span>
+
+        <span class="k">return</span> <span class="n">cos_sim_edges</span></div>
+
+    <span class="k">def</span> <span class="nf">get_doc_nodes_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_document_nodes</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_topic_nodes_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_topic_nodes</span>
+
+    <span class="k">def</span> <span class="nf">get_edges_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filtered_edges</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_parall_coords_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parall_coords</span>
+
+    <span class="k">def</span> <span class="nf">get_colors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">colors</span>
+
+    <span class="k">def</span> <span class="nf">get_topics_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">topic_df</span>
+    
+    <span class="k">def</span> <span class="nf">get_document_title_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_dict</span><span class="p">[</span><span class="n">value</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_filtered</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;document&#39;</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">get_number_of_clusters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_of_clusters</span>
+
+    <span class="c1">#setup the desired number of clusters</span>
+    <span class="k">def</span> <span class="nf">set_number_of_clusters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_of_clusters</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="c1">#Setup new cosine similarity filter based on the slider value</span>
+    <span class="k">def</span> <span class="nf">set_cosine_sim_treshold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cosine_sim_threshold</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_cosine_sim</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">set_word_prob_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">word_prob_range</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="c1"># To remove documents:</span>
+<div class="viewcode-block" id="LDA.remove_document"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.remove_document">[docs]</a>    <span class="k">def</span> <span class="nf">remove_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove documents by clicking on the delete document button</span>
+
+<span class="sd">        :param value: id of the document node</span>
+<span class="sd">        :return: updated dictionary of nodes, by removing the marked document</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Update the document list: LDA has to be recalculated</span>
+
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_dict</span><span class="p">[</span><span class="n">value</span><span class="p">]]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_dict</span><span class="p">[</span><span class="n">value</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_lda</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LDA.reset_settings"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.reset_settings">[docs]</a>    <span class="k">def</span> <span class="nf">reset_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset the the view and the lda class itself with the original cluster number</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orig_clust_num</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LDA.update_lda"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.update_lda">[docs]</a>    <span class="k">def</span> <span class="nf">update_lda</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Re-cluster with the new cluster number (reaction of &quot;update&quot; button on the app)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lda_bag_of_words</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_bag_of_words_model</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lda</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_lda_related_class_elements</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LDA.update_cosine_sim"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.update_cosine_sim">[docs]</a>    <span class="k">def</span> <span class="nf">update_cosine_sim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update cosine similarites</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cos_sim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_cosine_similarity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filtered_edges</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">lda_get_lda_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span>
+
+    <span class="k">def</span> <span class="nf">get_lda_model_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="o">.</span><span class="n">state</span>
+
+    <span class="c1">#word to id from the lda id2word, in order to extract the word lambdas by index</span>
+    <span class="k">def</span> <span class="nf">get_term_invert_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">term_invert_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="o">.</span><span class="n">id2word</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="k">return</span> <span class="n">term_invert_dict</span>
+
+    <span class="k">def</span> <span class="nf">get_topic_term_prob_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">topics_terms_proba_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">/</span> <span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lda_model_state</span><span class="p">()</span><span class="o">.</span><span class="n">get_lambda</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">topics_terms_proba_matrix</span>
+
+    <span class="c1">#not used in the final version</span>
+    <span class="k">def</span> <span class="nf">update_term_topic_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic_idx</span><span class="p">,</span> <span class="n">term</span><span class="p">,</span> <span class="n">new_term_weight</span><span class="p">):</span>
+        <span class="n">term_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_term_invert_dict</span><span class="p">()[</span><span class="n">term</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updated_term_topic_proba</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_topic_term_prob_matrix</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updated_term_topic_proba</span><span class="p">[</span><span class="n">topic_idx</span><span class="p">,</span> <span class="n">term_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_term_weight</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">updated_term_topic_proba</span>
+
+    <span class="c1"># not used in the final version</span>
+    <span class="c1">#Build up a new state with the updated weights, then make an inference step (not working currently)</span>
+    <span class="k">def</span> <span class="nf">term_prob_update_lda</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="o">.</span><span class="n">init_dir_prior</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">updated_term_topic_proba</span><span class="p">,</span> <span class="s1">&#39;eta&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="o">.</span><span class="n">inference</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_bag_of_words</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_bag_of_words</span><span class="p">)</span>
+
+    <span class="c1">#</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="LDA.filter_parall_coords_topic_contribution"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.filter_parall_coords_topic_contribution">[docs]</a>    <span class="k">def</span> <span class="nf">filter_parall_coords_topic_contribution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        filter paralell coordinates based on the input value (&gt;value has to be kept)</span>
+<span class="sd">        filtering also the document-topic df to filter in cytoscape</span>
+
+<span class="sd">        :param value: paralell coordinate filter threshold</span>
+<span class="sd">        :return:filtered paralell coordinates and topic dataframe</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_paarcord_topics_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_topics_df</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1">#get_indexed_topic_node_df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_paarcord_topics_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_paarcord_topics_df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">filtered_paarcord_topics_df</span><span class="p">[</span><span class="s1">&#39;Topic_Perc_Contrib&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">value</span><span class="p">]</span>
+        <span class="n">remained_docs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_paarcord_topics_df</span><span class="p">[</span><span class="s1">&#39;Document_No&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_topic_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topic_df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">topic_df</span><span class="p">[</span><span class="s1">&#39;Document_No&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">remained_docs</span><span class="p">)]</span></div>
+
+    <span class="k">def</span> <span class="nf">get_filtered_parall_coords_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parall_coord_df</span><span class="p">()</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">filtered_paarcord_topics_df</span><span class="p">[</span><span class="s1">&#39;Title&#39;</span><span class="p">]]</span>
+
+<div class="viewcode-block" id="LDA.get_top_n_word_probs_for_topic_i"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.get_top_n_word_probs_for_topic_i">[docs]</a>    <span class="k">def</span> <span class="nf">get_top_n_word_probs_for_topic_i</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic_id</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Term weight table input: extract the top n words for the currently selected topic</span>
+
+<span class="sd">        :param topic_id: id of the cluster</span>
+<span class="sd">        :param n: number of words to be extracted</span>
+<span class="sd">        :return: dataframe with the words and the related probabilities</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">get_word_probs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_probs</span><span class="p">[</span><span class="n">topic_id</span><span class="p">]</span>
+
+        <span class="n">word</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">get_word_probs</span><span class="p">:</span>
+            <span class="n">word</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">probs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        
+        <span class="n">word_probs_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Words&#39;</span><span class="p">:</span> <span class="n">word</span><span class="p">,</span> <span class="s1">&#39;Probabilities&#39;</span><span class="p">:</span> <span class="n">probs</span><span class="p">})</span>
+        <span class="c1">#get only the top n words</span>
+        <span class="n">word_probs_df</span> <span class="o">=</span> <span class="n">word_probs_df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;Probabilities&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">word_probs_df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;Probabilities&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">word_probs_df</span></div>
+
+    <span class="k">def</span> <span class="nf">set_last_selected_cluster</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_selected_cluster</span> <span class="o">=</span> <span class="n">value</span>
+    
+    <span class="k">def</span> <span class="nf">get_last_selected_cluster</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_selected_cluster</span>
+
+<div class="viewcode-block" id="LDA.get_top_topic_for_words"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.get_top_topic_for_words">[docs]</a>    <span class="k">def</span> <span class="nf">get_top_topic_for_words</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        build Topic - word - probability df with the related opaque color for term highlight in document view</span>
+
+<span class="sd">        :return: pandas.DataFrame(&#39;Word&#39;, &#39;Color&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">topic</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">word</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">prob</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_word_probabilities</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                <span class="n">topic</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                <span class="n">word</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">prob</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">all_word_probs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Topic&#39;</span><span class="p">,</span> <span class="s1">&#39;Word&#39;</span><span class="p">,</span> <span class="s1">&#39;Probability&#39;</span><span class="p">])</span>
+        <span class="n">all_word_probs</span><span class="p">[</span><span class="s1">&#39;Topic&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">topic</span>
+        <span class="n">all_word_probs</span><span class="p">[</span><span class="s1">&#39;Word&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">word</span>
+        <span class="n">all_word_probs</span><span class="p">[</span><span class="s1">&#39;Probability&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span>
+
+        <span class="c1"># Sort by probability in descending order</span>
+        <span class="n">all_word_probs</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;Probability&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Drop duplicate terms, keep always the first --&gt; Get only the top topics for term</span>
+        <span class="n">all_word_probs_distinct</span> <span class="o">=</span> <span class="n">all_word_probs</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="s1">&#39;Word&#39;</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)</span>
+        <span class="n">all_word_probs_distinct</span><span class="p">[</span><span class="s1">&#39;Color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_word_probs_distinct</span>\
+                                            <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">color_assign_to_topic_with_opacity</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;Topic&#39;</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">all_word_probs_distinct</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_topic_for_terms</span> <span class="o">=</span> <span class="n">all_word_probs_distinct</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Topic&#39;</span><span class="p">,</span> <span class="s1">&#39;Probability&#39;</span><span class="p">])</span></div>
+
+    <span class="k">def</span> <span class="nf">get_terms_with_best_topic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_topic_for_terms</span>
+
+<div class="viewcode-block" id="LDA.build_term_higlights"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.build_term_higlights">[docs]</a>    <span class="k">def</span> <span class="nf">build_term_higlights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc_input</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setup the document view by highlighting the most relevant terms with their topic correspondence</span>
+
+<span class="sd">        :param doc_input: Id of the document</span>
+<span class="sd">        :return: str(): document as string, with the proper html tags assigned for specific terms (will</span>
+<span class="sd">        be used in the visualization by dash.DangerouslySetInnerHTML())</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#lowercase and lemmatize</span>
+        <span class="n">doc_desc</span> <span class="o">=</span> <span class="n">doc_input</span><span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">b_tok</span> <span class="o">=</span> <span class="n">wordpunct_tokenize</span><span class="p">(</span><span class="n">doc_desc</span><span class="p">)</span>
+        <span class="c1"># lowercase all the words</span>
+        <span class="n">b_low</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">b_tok</span><span class="p">]</span>
+
+        <span class="n">lemmatizer</span> <span class="o">=</span> <span class="n">WordNetLemmatizer</span><span class="p">()</span>
+        <span class="c1"># Lemmatize the cleaned words</span>
+        <span class="n">b_lemm</span> <span class="o">=</span> <span class="p">[</span><span class="n">lemmatizer</span><span class="o">.</span><span class="n">lemmatize</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">b_low</span><span class="p">]</span>
+
+        <span class="n">doc_highlighted</span> <span class="o">=</span> <span class="n">b_tok</span>
+
+        <span class="n">top_topic_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_topic_for_terms</span><span class="p">[</span><span class="s1">&#39;Word&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="c1"># Assign the the highlighting to the raw text (unlemmatized etc.)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">b_lemm</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">top_topic_list</span><span class="p">:</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_topic_for_terms</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">top_topic_for_terms</span><span class="p">[</span><span class="s1">&#39;Word&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">b</span><span class="p">][</span><span class="s1">&#39;Color&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">doc_highlighted</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">doc_highlighted</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">doc_highlighted</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="sa">f</span><span class="s2">&quot;&lt;span style=</span><span class="se">\&quot;</span><span class="s2">background-color:&quot;</span>
+                                                                                   <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">color</span><span class="si">}</span><span class="s2">;\&gt;</span><span class="si">{</span><span class="n">doc_highlighted</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                                                                                   <span class="sa">f</span><span class="s2">&quot;&lt;/span&gt; &quot;</span><span class="p">)</span>
+        
+        <span class="n">doc_string</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">doc_highlighted</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">doc_string</span></div>
+
+    <span class="k">def</span> <span class="nf">set_last_selected_cluster_from_clust_sum_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_selected_cluster_from_clust_sum_view</span> <span class="o">=</span> <span class="n">cluster_id</span>
+
+    <span class="k">def</span> <span class="nf">get_last_selected_cluster_from_clust_sum_view</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_selected_cluster_from_clust_sum_view</span>
+
+    <span class="k">def</span> <span class="nf">set_clusters_to_merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clusters</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clusters_to_merge</span> <span class="o">=</span> <span class="n">clusters</span>
+
+    <span class="k">def</span> <span class="nf">get_clusters_to_merge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">clusters_to_merge</span>
+
+<div class="viewcode-block" id="LDA.update_lda_related_class_elements"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.update_lda_related_class_elements">[docs]</a>    <span class="k">def</span> <span class="nf">update_lda_related_class_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        update the relevant class components after cluster merge / delete , re-clustering steps</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_most_rel_topics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_most_relevant_topics</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">topic_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_topics_sentence</span><span class="p">()</span>
+
+        <span class="c1"># update topic positions function call must be here</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topic_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_topic_nodes</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">document_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_document_nodes</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cos_sim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_cosine_similarity</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filtered_edges</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_top_topic_for_words</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">indexed_topic_node_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_indexed_topic_node_df</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">word_probs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_word_probabilities</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_last_selected_cluster_from_clust_sum_view</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_last_selected_cluster</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">col</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">values</span><span class="p">())[:</span><span class="bp">self</span><span class="o">.</span><span class="n">num_of_clusters</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_topic_df</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="LDA.delete_cluster"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.delete_cluster">[docs]</a>    <span class="k">def</span> <span class="nf">delete_cluster</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove cluster from lda: modifying the state of the model</span>
+
+<span class="sd">        :return: lda with the removed cluster</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">cluster_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_last_selected_cluster_from_clust_sum_view</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;Cluster &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+
+        <span class="n">new_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lda_model_state</span><span class="p">()</span>
+
+        <span class="c1">#get the current word probabilites to topics</span>
+        <span class="n">word_probs_stats</span> <span class="o">=</span> <span class="n">new_state</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s1">&#39;sstats&#39;</span><span class="p">]</span>
+
+        <span class="c1">#remove the cluster</span>
+        <span class="n">word_probs_stats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">word_probs_stats</span><span class="p">,</span> <span class="n">cluster_id</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1">#Update the state - with the removal of the cluster</span>
+        <span class="n">new_state</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s1">&#39;sstats&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">word_probs_stats</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+        <span class="c1">#set the reduced cluster number</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_of_clusters</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">new_state</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s1">&#39;sstats&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># init the lda with cluster number and term dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span> <span class="o">=</span> <span class="n">LdaMulticore</span><span class="p">(</span><span class="n">num_topics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_of_clusters</span><span class="p">,</span> <span class="n">id2word</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_dict</span><span class="p">)</span>
+        <span class="c1"># Set the state for the saved one</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">new_state</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="o">.</span><span class="n">inference</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_bag_of_words</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_lda_related_class_elements</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LDA.merge_cluster"><a class="viewcode-back" href="../index.html#LDA_simplified.LDA.merge_cluster">[docs]</a>    <span class="k">def</span> <span class="nf">merge_cluster</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster_ids</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Merge clusters selected from the checklist: sum up the probs at row wise</span>
+
+<span class="sd">        :param cluster_ids: cluster ids selected in checklist</span>
+<span class="sd">        :return: model with merged clusters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lda_model_state</span><span class="p">()</span>
+        <span class="n">new_state</span>  <span class="o">=</span> <span class="n">current_state</span>
+        <span class="n">current_lda_stats</span> <span class="o">=</span> <span class="n">current_state</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s1">&#39;sstats&#39;</span><span class="p">]</span>
+
+        <span class="n">clust_id_int</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cluster_ids</span><span class="p">]</span>
+
+        <span class="n">merge_clust_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">cluster_ids</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">clust_id_int</span><span class="p">):</span>
+            <span class="n">merge_clust_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">current_lda_stats</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="p">:]</span>
+
+        <span class="n">curr_stats_cleaned</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">current_lda_stats</span><span class="p">,</span><span class="n">clust_id_int</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1">#sum up the statistics</span>
+        <span class="n">merged_clusters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">merge_clust_array</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">final_cluster_stats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">curr_stats_cleaned</span><span class="p">,</span> <span class="n">merged_clusters</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">new_state</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s1">&#39;sstats&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">final_cluster_stats</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_of_clusters</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">new_state</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s1">&#39;sstats&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># init the lda with cluster number and term dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span> <span class="o">=</span> <span class="n">LdaMulticore</span><span class="p">(</span><span class="n">num_topics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_of_clusters</span><span class="p">,</span> <span class="n">id2word</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_dict</span><span class="p">)</span>
+        <span class="c1"># Set the state for the saved one</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">new_state</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lda_model</span><span class="o">.</span><span class="n">inference</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lda_bag_of_words</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_lda_related_class_elements</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Timea Toth, Andras Dorombozi.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
