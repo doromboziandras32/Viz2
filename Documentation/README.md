@@ -4,7 +4,7 @@
     ```
     pip install -r requirements.txt
     ```
-2. Open jupyter notebook **LDA_simplified-CLEANED.ipynb**
+2. Open jupyter notebook **LDA_viz.ipynb**
 
 3. Click on **Run All Cells**
 
