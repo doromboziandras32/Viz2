@@ -15,7 +15,7 @@
 
     <div class="row">
         <div class="col s8">
-            <p>Based on the paper <b>iVisClustering: An Interactive Visual Document Clusteringvia Topic Modeling</b> published by Lee at al. in 2012 we created an interactive dashboard for document clustering.</p>
+            <p>Based on the paper <b>iVisClustering: An Interactive Visual Document Clustering via Topic Modeling</b> published by Lee at al. in 2012 we created an interactive dashboard for document clustering.</p>
         </div>
         <div class="col s4">
             <center><img src="dash.png" style="height: 50%;" alt="Dashboard"></center>
@@ -23,7 +23,7 @@
 
             </div>
     <div class="row">
-    <p>The goal of this project is to separate document data with similar characteristics and assign them into clusters.  Clustering has also several challenges, such as noisy data or outliers.  This makes it even more  challenging  to  find  an  automated  clustering  algorithm,  since  every  dataset  differs,  and  just because one method works really good on one dataset, it doesn’t mean that it would fit also new data. The amount of online documents is growing really fast in the last years. To cluster these documents,the authors developed a visual analysis system, iVisClustering, that performs interactive clusteringfor  document  data. </p>
+    <p>The goal of this project is to separate document data with similar characteristics and assign them into clusters.  Clustering has also several challenges, such as noisy data or outliers.  This makes it even more  challenging  to  find  an  automated  clustering  algorithm,  since  every  dataset  differs,  and  just because one method works really good on one dataset, it doesn’t mean that it would fit also new data. The amount of online documents is growing really fast in the last years. To cluster these documents,the authors developed a visual analysis system, iVisClustering, that performs interactive clustering for  document  data. </p>
 
     <h3>Overview of the implementation</h3>
 
@@ -37,32 +37,32 @@
     <h3>Views of the dashboard</h3>
     <ul>
     <li>
-    <p><b>Cluster Relation View (A)</p></b>
-    <p>The Cluster  Relation  View represents  the  datasets  as  colored  points,  where  the  points  with  thesame color belongs to the same cluster. In case of clicking on the document, on the left side the document title can be seen and it also pops up on the Document View (F). In case the user doesn't find this document relevant, it can be deleted by klicking on the delete button. The slider for the cosine similarity colors the edges between the documents, which have a higher cosine similarity than the choosen value.</p> </li>
+    <p><b>Cluster Relation View (A)</b></p>
+    <p>The Cluster  Relation  View represents  the  datasets  as  colored  points,  where  the  points  with  the same color belongs to the same cluster. In case of clicking on the document, on the left side the document title can be seen and it also pops up on the Document View (F). In case the user doesn't find this document relevant, it can be deleted by klicking on the delete button. The slider for the cosine similarity colors the edges between the documents, which have a higher cosine similarity than the choosen value.</p> </li>
     <li>
-    <p><b>Cluster Summary View (B)</p></b>
-    If the user klicks on a cluster node on the Cluster Relation View(A), the Cluster Summary View pops up. Here we can see the clusters with the most frequent words better. In case of unnesesarry/unwanted cluster, the user can delete it by klicking on the delete button. If two clusters are really similar and the user can merge the selected clusters.</li>
+    <p><b>Cluster Summary View (B)</b></p>
+    If the user clicks on a cluster node on the Cluster Relation View(A), the Cluster Summary View pops up. Here we can see the clusters with the most frequent words better. In case of unnecessary/unwanted cluster, the user can delete it by clicking on the delete button. If two clusters are really similar and the user can merge the selected clusters.</li>
     <li>
-    <p><b>Term Weight View (C)</p></b>
-    If the user klicks on a cluster node on the Cluster Relation View(A), the Term Weight View pops up. On the horizontal barplot the words with the highest probability of the choosen cluster can be seen. The values on the barchart represent the probability for a word in the cluster.</li>
+    <p><b>Term Weight View (C)</b></p>
+    If the user clicks on a cluster node on the Cluster Relation View(A), the Term Weight View pops up. On the horizontal barplot the words with the highest probability of the chosen cluster can be seen. The values on the barchart represent the probability for a word in the cluster.</li>
     <li>
-    <p><b>Parallel Coordinates View (D)</p></b>
-    A  Parallel  Coordinates  plot  is  a  simple  way  to  visualize  multi-dimensional data.  The lines in the plots are representing the documents and the colors theclusters, the document belongs to.  The slider abowe the plot provides the user the possibility to filter out some noisy documents. </li>
-        <li>
-    <p><b>Word Cloud (E)</p></b>
-    The Wordcloud gives the user the possibility to look at the most representative words of the cluster. The size of the words depends on the probability of the word in the cluster. It can also help to get a better understandign of the choosen cluster </li>
+    <p><b>Parallel Coordinates View (D)</b></p>
+    A  Parallel  Coordinates  plot  is  a  simple  way  to  visualize  multi-dimensional data.  The lines in the plots are representing the documents and the colors are the clusters, the document belongs to.  The slider above the plot provides the user the possibility to filter out some noisy documents. </li>
+    <li>
+    <p><b>Word Cloud (E)</b></p>
+    The Word Cloud gives the user the possibility to look at the most representative words of the cluster. The size of the words depends on the probability of the word in the cluster. It can also help to get a better understanding of the chosen cluster. </li>
 
     
     <li>
-    <p><b>Document View (F)</p></b>
-    This view shows us the document itself, which helps us to understand why does a certain document belong to a cluster (in connection with the Cluster Relation View).  This view also highlights terms in different colors according to which topic the terms belong to.
+    <p><b>Document View (F)</b></p>
+    This view shows us the document itself, which helps us to understand why does a certain document belong to a cluster (in connection with the Cluster Relation View). This view also highlights terms in different colors according to which topic the terms belong to.
     </li>
 
     </ul>
     
     
     <h3>Corpus of documents </h3>
-    <p>Collection of Infovis and Vast papers between 1997 and 2009, which contains 454 documents. <a href="https://www.cc.gatech.edu/gvu/ii/jigsaw/datafiles.html"></p> Download data </a></p>
+    <p>Collection of Infovis and Vast papers between 1997 and 2009, which contains 454 documents. <a href="https://www.cc.gatech.edu/gvu/ii/jigsaw/datafiles.html"></a>Download data </p>
 
 
 

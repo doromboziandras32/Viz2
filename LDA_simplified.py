@@ -16,7 +16,7 @@ import pandas as pd  # pip install pandas
 
 class LDA:
     """
-    Init of class: load and clean the data, and make the first ldsa clustering with the the given k cluster
+    Init of class: load and clean the data, and make the first lda clustering with the the given k cluster
     :param: k: desired number of clusters used in LDA , should be at least 2, and 10 at maximum
     :param: path: Load path of the file
     """
