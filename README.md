@@ -32,4 +32,5 @@ pywin32_postinstall.py has to be installed as Administrator ([Stackoverflow refe
    ```
 
 Restart Kernel then run the jupyter notebook
+
 In case of PyCharm: It is recommended to setup a pip venv, from a native python interpreter, in order to avoid the upon problem, which appears if the environment is configured via conda venv interpreter. 
